@@ -1,4 +1,4 @@
-<<<<<<< HEAD
+
 # Main
 
 import numpy as np
@@ -74,9 +74,3 @@ if __name__ == '__main__':
     cx = GUI(sim)
     cx.start()
 
-# hello
-=======
-# Main
-
-print('hello')
->>>>>>> 874220170c7c7b3e2257742bad644872a7fe8516
