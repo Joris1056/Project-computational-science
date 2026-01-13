@@ -28,7 +28,10 @@ class ParkinsonSim(Model):
         
         # 2. Initialize your grid here (e.g., all zeros for healthy)
         # You could also 'infect' one cell in the center to start the process
-        self.config = ... 
+        self.config = np.zeros((self.height,self.width))
+        middle_x = self.width//2
+        middle_y = self.height//2
+        self.config[middle_y,middle_x] = 1
 
     def draw(self):
         """Handles the visualization of the grid."""
