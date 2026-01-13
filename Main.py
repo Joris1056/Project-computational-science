@@ -15,8 +15,7 @@ class ParkinsonSim(Model):
         # These will appear as sliders/input fields in the GUI
         self.make_param('width', 50)
         self.make_param('height', 50)
-        self.make_param('k' = ....)
-        self.make_param('r' = ....)
+        self.make_param('k', 7)  # states
         self.make_param('infection_p_stage1', 0.1)
         self.make_param('infection_p_stage2', 0.2)
         self.make_param('infection_p_stage3', 0.3)
@@ -37,12 +36,18 @@ class ParkinsonSim(Model):
 
     def draw(self):
         """Handles the visualization of the grid."""
+        import matplotlib
         import matplotlib.pyplot as plt
         
         plt.cla()
         # 3. Use plt.imshow() to render self.config
         # Note: Set vmin and vmax to keep the color scale consistent
-        ...
+        cmap = plt.get_cmap('YlOrRd')
+        if not plt.gca().yaxis_inverted():
+            plt.gca().invert_yaxis()
+        plt.imshow(self.config, interpolation='none', vmin=0, vmax=self.k - 1,
+                cmap=cmap)
+        plt.axis('image')
         plt.title(f'Time step: {self.t}')
 
     def get_neighbors(self, y, x):
