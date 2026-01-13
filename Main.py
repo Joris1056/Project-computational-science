@@ -15,6 +15,8 @@ class ParkinsonSim(Model):
         # These will appear as sliders/input fields in the GUI
         self.make_param('width', 50)
         self.make_param('height', 50)
+        self.make_param('k' = ....)
+        self.make_param('r' = ....)
         self.make_param('infection_p_stage1', 0.1)
         self.make_param('infection_p_stage2', 0.2)
         self.make_param('infection_p_stage3', 0.3)
