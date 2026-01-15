@@ -10,6 +10,7 @@ class ParkinsonSim(Model):
 
         self.t = 0
         self.config = None
+        self.sensitivity_matrix = None
 
         self.make_param('width', 150)
         self.make_param('height', 150)
@@ -24,7 +25,11 @@ class ParkinsonSim(Model):
         self.make_param('degeneration_p_stage3', 0.3)
         self.make_param('degeneration_p_stage4', 0.4)
         self.make_param('degeneration_p_stage5', 0.5)
-        self.make_param('p_spontaneous_degeneration', 0.0001)
+        self.make_param('p_spontaneous_degeneration', 0)
+        self.make_param('lateral_base_multiplier', 1)
+        self.make_param('lateral_ratio_multiplication', 0.5)
+        #self.make_param('ventro_lateral_sens', 1.5)
+        #self.make_param('medial_sens', 0.7)
 
     def reset(self):
         """Initializes or resets the simulation state."""
@@ -53,6 +58,29 @@ class ParkinsonSim(Model):
                 if y > curve and y < curve + dikte:
                     self.config[y, x] = 0
         
+        self.sensitivity_matrix = np.full((self.height, self.width), 0)
+
+        
+        for y in range(self.height):
+             for x in range(self.width):
+                 if self.config[y,x] != -1:
+                      ratio_x = x/self.width
+                      ratio_y = y/self.height
+                      x_multiplier = self.lateral_base_multiplier + (ratio_x * self.lateral_ratio_multiplication)
+                      #y_multiplier = 0.1 + ((1 - ratio_y) * 0.1)
+                      self.sensitivity_matrix[y,x] = x_multiplier #+ y_multiplier
+
+        found = False
+        for x in range(self.width - 1, 0, -1):
+            for y in range(self.height):
+                # Check of dit punt in onze SN-vorm ligt
+                if self.config[y, x] == 0:
+                    # Maak deze cel stadium 1 (beginnende degeneratie)
+                    self.config[y, x] = 1
+                    found = True
+                    break
+            if found: 
+                break
 
 
     def draw(self):
@@ -93,15 +121,19 @@ class ParkinsonSim(Model):
     
         return list(set_neighbours)
     
-    def calculate_new_cell_value(self, current_value, neighbour_values):
+    def calculate_new_cell_value(self, current_value, neighbour_values, y, x):
+        if current_value == -1:
+             return -1
         
+        local_sensitivity = self.sensitivity_matrix[y,x]
         # dead cell remains dead
         if current_value == 6:
             new_value = 6
             return new_value
-        
+
         # if current cell is healthy chance of getting starting degeneration
         elif current_value == 0:
+        
             sick_neighbours = []
             for value in neighbour_values:
                 if value >= 1:
@@ -110,17 +142,17 @@ class ParkinsonSim(Model):
             p_no_infection_one_cell = []
             for value in sick_neighbours:
                 if value == 1:
-                    p_no_infection_one_cell.append(1-self.infection_p_stage1)
+                    p_no_infection_one_cell.append(1-self.infection_p_stage1*local_sensitivity)
                 elif value == 2:
-                    p_no_infection_one_cell.append(1-self.infection_p_stage2)
+                    p_no_infection_one_cell.append(1-self.infection_p_stage2*local_sensitivity)
                 elif value == 3:
-                    p_no_infection_one_cell.append(1-self.infection_p_stage3)
+                    p_no_infection_one_cell.append(1-self.infection_p_stage3*local_sensitivity)
                 elif value == 4:
-                    p_no_infection_one_cell.append(1-self.infection_p_stage4)
+                    p_no_infection_one_cell.append(1-self.infection_p_stage4*local_sensitivity)
                 elif value == 5:
-                    p_no_infection_one_cell.append(1-self.infection_p_stage5)
+                    p_no_infection_one_cell.append(1-self.infection_p_stage5*local_sensitivity)
             
-            p_no_infection = 1 - self.p_spontaneous_degeneration
+            p_no_infection = 1 - (self.p_spontaneous_degeneration * local_sensitivity)
             for i in range(0,len(p_no_infection_one_cell)):
                 p_no_infection *= p_no_infection_one_cell[i]
 
@@ -138,15 +170,15 @@ class ParkinsonSim(Model):
         p_degeneration = 0
         if current_value != 0 and current_value != 6:
             if current_value == 1:
-                    p_degeneration = self.degeneration_p_stage1
+                    p_degeneration = self.degeneration_p_stage1*local_sensitivity
             elif current_value == 2:
-                    p_degeneration = self.degeneration_p_stage2
+                    p_degeneration = self.degeneration_p_stage2*local_sensitivity
             elif current_value == 3:
-                    p_degeneration = self.degeneration_p_stage3
+                    p_degeneration = self.degeneration_p_stage3*local_sensitivity
             elif current_value == 4:
-                    p_degeneration = self.degeneration_p_stage4
+                    p_degeneration = self.degeneration_p_stage4*local_sensitivity
             elif current_value == 5:
-                    p_degeneration = self.degeneration_p_stage5
+                    p_degeneration = self.degeneration_p_stage5*local_sensitivity
 
             if np.random.random() < p_degeneration:
                     new_value = current_value + 1
@@ -171,7 +203,7 @@ class ParkinsonSim(Model):
                 for neighbour_x, neighbour_y in self.get_neighbours(y,x):
                     value = self.config[neighbour_y,neighbour_x]
                     list_neighbour_value.append(value)
-                new_config[y,x] = self.calculate_new_cell_value(cell_value,list_neighbour_value)
+                new_config[y,x] = self.calculate_new_cell_value(cell_value,list_neighbour_value, y, x)
         
         self.config = new_config
         
