@@ -11,8 +11,6 @@ class ParkinsonSim(Model):
         self.t = 0
         self.config = None
 
-        # 1. Define your parameters here
-        # These will appear as sliders/input fields in the GUI
         self.make_param('width', 150)
         self.make_param('height', 150)
         self.make_param('k', 7)  # states
@@ -27,7 +25,6 @@ class ParkinsonSim(Model):
         self.make_param('degeneration_p_stage4', 0.4)
         self.make_param('degeneration_p_stage5', 0.5)
         self.make_param('p_spontaneous_degeneration', 0.0001)
-        # SUGGESTION: Add parameters like 'p_spontaneous', 'p_infection', etc.
 
     def reset(self):
         """Initializes or resets the simulation state."""
@@ -62,6 +59,10 @@ class ParkinsonSim(Model):
         """Handles the visualization of the grid."""
         import matplotlib
         import matplotlib.pyplot as plt
+
+        total_neuron = 4.5*10**5
+        total_cells = self.width * self.height
+        neuron_representation = f'One cell = {total_neuron/total_cells} dopaminergic neurons '
         
         plt.cla()
         # 3. Use plt.imshow() to render self.config
@@ -74,6 +75,9 @@ class ParkinsonSim(Model):
         plt.title(f'Substantia Nigra (coronal view) Time step: {self.t}')
         plt.xlabel('medial --> lateral')
         plt.ylabel('ventral <--> dorsal')
+        plt.text(0.02, 0.95, neuron_representation, transform=plt.gca().transAxes, 
+                 fontsize=9, verticalalignment='top',
+                 bbox=dict(boxstyle='round', facecolor='white', alpha=0.7))
 
     def get_neighbours(self, y, x):
         """
