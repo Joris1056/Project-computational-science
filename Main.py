@@ -26,6 +26,7 @@ class ParkinsonSim(Model):
         self.make_param('degeneration_p_stage3', 0.3)
         self.make_param('degeneration_p_stage4', 0.4)
         self.make_param('degeneration_p_stage5', 0.5)
+        self.make_param('p_spontaneous_degeneration', 0.0001)
         # SUGGESTION: Add parameters like 'p_spontaneous', 'p_infection', etc.
 
     def reset(self):
@@ -54,6 +55,8 @@ class ParkinsonSim(Model):
                 cmap=cmap)
         plt.axis('image')
         plt.title(f'Time step: {self.t}')
+        plt.xlabel('lateral <-- medial --> lateral')
+        plt.ylabel('ventral <--> dorsal')
 
     def get_neighbours(self, y, x):
         """
@@ -96,7 +99,7 @@ class ParkinsonSim(Model):
                 elif value == 5:
                     p_no_infection_one_cell.append(1-self.infection_p_stage5)
             
-            p_no_infection = 1
+            p_no_infection = 1 - self.p_spontaneous_degeneration
             for i in range(0,len(p_no_infection_one_cell)):
                 p_no_infection *= p_no_infection_one_cell[i]
 
