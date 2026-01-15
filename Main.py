@@ -71,7 +71,7 @@ class ParkinsonSim(Model):
         plt.imshow(self.config, origin = 'lower', vmin=0, vmax=self.k - 1,
                 cmap=cmap)
         plt.axis('image')
-        plt.title(f'Substantia Nigra Time step: {self.t}')
+        plt.title(f'Substantia Nigra (coronal view) Time step: {self.t}')
         plt.xlabel('medial --> lateral')
         plt.ylabel('ventral <--> dorsal')
 
