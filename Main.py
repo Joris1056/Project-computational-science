@@ -11,6 +11,7 @@ class ParkinsonSim(Model):
         self.t = 0
         self.config = None
         self.sensitivity_matrix = None
+        self.dead_neurons = 0
 
         self.make_param('width', 150)
         self.make_param('height', 150)
@@ -88,10 +89,16 @@ class ParkinsonSim(Model):
         import matplotlib
         import matplotlib.pyplot as plt
 
+        mask = (self.config != -1)
+        number_neurons = np.sum(mask)
+
+        #number_dead_neurons = np.sum(self.config == 6)
+
         total_neuron = 4.5*10**5
-        total_cells = self.width * self.height
-        neuron_representation = f'One cell = {total_neuron/total_cells} dopaminergic neurons '
-        
+        neuron_per_cel = total_neuron/number_neurons
+        perc_dead_neurons = round((self.dead_neurons/number_neurons) * 100,2)
+        neuron_representation = f'One cell = {neuron_per_cel} dopaminergic neurons'
+        percentage_dead_neurons = f'{perc_dead_neurons}% neurons dead'        
         plt.cla()
         # 3. Use plt.imshow() to render self.config
         # Note: Set vmin and vmax to keep the color scale consistent
@@ -104,6 +111,9 @@ class ParkinsonSim(Model):
         plt.xlabel('medial --> lateral')
         plt.ylabel('ventral <--> dorsal')
         plt.text(0.02, 0.95, neuron_representation, transform=plt.gca().transAxes, 
+                 fontsize=9, verticalalignment='top',
+                 bbox=dict(boxstyle='round', facecolor='white', alpha=0.7))
+        plt.text(0.02, 0.85, percentage_dead_neurons, transform=plt.gca().transAxes, 
                  fontsize=9, verticalalignment='top',
                  bbox=dict(boxstyle='round', facecolor='white', alpha=0.7))
 
@@ -126,6 +136,7 @@ class ParkinsonSim(Model):
              return -1
         
         local_sensitivity = self.sensitivity_matrix[y,x]
+
         # dead cell remains dead
         if current_value == 6:
             new_value = 6
@@ -182,6 +193,8 @@ class ParkinsonSim(Model):
 
             if np.random.random() < p_degeneration:
                     new_value = current_value + 1
+                    if new_value == 6:
+                         self.dead_neurons += 1
             else:
                 new_value = current_value
             
