@@ -21,6 +21,11 @@ class ParkinsonSim(Model):
         self.make_param('infection_p_stage3', 0.3)
         self.make_param('infection_p_stage4', 0.4)
         self.make_param('infection_p_stage5', 0.5)
+        self.make_param('degeneration_p_stage1', 0.1)
+        self.make_param('degeneration_p_stage2', 0.2)
+        self.make_param('degeneration_p_stage3', 0.3)
+        self.make_param('degeneration_p_stage4', 0.4)
+        self.make_param('degeneration_p_stage5', 0.5)
         # SUGGESTION: Add parameters like 'p_spontaneous', 'p_infection', etc.
 
     def reset(self):
@@ -50,12 +55,83 @@ class ParkinsonSim(Model):
         plt.axis('image')
         plt.title(f'Time step: {self.t}')
 
-    def get_neighbors(self, y, x):
+    def get_neighbours(self, y, x):
         """
         Helper function to retrieve the states of the 8 neighbors (Moore neighborhood).
         Tip: Use the modulo operator (%) to handle periodic boundary conditions (wrapping).
         """
-        pass
+        set_neighbours = set()
+        for dx in range(-1, 2):
+            for dy in range(-1,2):
+                tuple_neighbour = ((x+dx)%self.width, (y+dy)%self.height)
+                if not (dx == 0 and dy == 0):
+                    set_neighbours.add(tuple_neighbour)
+    
+        return list(set_neighbours)
+    
+    def calculate_new_cell_value(self, current_value, neighbour_values):
+        
+        # dead cell remains dead
+        if current_value == 6:
+            new_value = 6
+            return new_value
+        
+        # if current cell is healthy chance of getting starting degeneration
+        elif current_value == 0:
+            sick_neighbours = []
+            for value in neighbour_values:
+                if value >= 1:
+                    sick_neighbours.append(value)
+            
+            p_no_infection_one_cell = []
+            for value in sick_neighbours:
+                if value == 1:
+                    p_no_infection_one_cell.append(1-self.infection_p_stage1)
+                elif value == 2:
+                    p_no_infection_one_cell.append(1-self.infection_p_stage2)
+                elif value == 3:
+                    p_no_infection_one_cell.append(1-self.infection_p_stage3)
+                elif value == 4:
+                    p_no_infection_one_cell.append(1-self.infection_p_stage4)
+                elif value == 5:
+                    p_no_infection_one_cell.append(1-self.infection_p_stage5)
+            
+            p_no_infection = 1
+            for i in range(0,len(p_no_infection_one_cell)):
+                p_no_infection *= p_no_infection_one_cell[i]
+
+            # chance of healthy cell getting infected
+            p_infection = 1 - p_no_infection
+
+            if np.random.random() < p_infection:
+                new_value = 1
+                return new_value
+            else:
+                new_value = 0
+                return new_value
+        
+        # internal progression
+        p_degeneration = 0
+        if current_value != 0 and current_value != 6:
+            if current_value == 1:
+                    p_degeneration = self.degeneration_p_stage1
+            elif current_value == 2:
+                    p_degeneration = self.degeneration_p_stage2
+            elif current_value == 3:
+                    p_degeneration = self.degeneration_p_stage3
+            elif current_value == 4:
+                    p_degeneration = self.degeneration_p_stage4
+            elif current_value == 5:
+                    p_degeneration = self.degeneration_p_stage5
+
+            if np.random.random() < p_degeneration:
+                    new_value = current_value + 1
+            else:
+                new_value = current_value
+            
+        return new_value
+
+
 
     def step(self):
         """
@@ -63,24 +139,18 @@ class ParkinsonSim(Model):
         Each step represents a progression in time (e.g., one day or week).
         """
         self.t += 1
-        
-        # Create a copy to store the updates for the next state
-        # We must use the 'old' state to calculate all 'new' states simultaneously
         new_config = np.copy(self.config)
-
-        # 4. Iterate through every cell in the grid (nested for-loop)
-        # 5. Apply your logic based on the current state:
-        #    - Healthy cells: Check if they get infected by neighbors or age
-        #    - Sick cells: Advance their degradation level
-        #    - Dead cells: Remain dead (or perhaps leave a gap)
+        for x in range(self.width):
+            for y in range(self.height):
+                cell_value = self.config[y,x]
+                list_neighbour_value = []
+                for neighbour_x, neighbour_y in self.get_neighbours(y,x):
+                    value = self.config[neighbour_y,neighbour_x]
+                    list_neighbour_value.append(value)
+                new_config[y,x] = self.calculate_new_cell_value(cell_value,list_neighbour_value)
         
-        # 6. Use stochastic logic (probability):
-        #    if np.random.random() < calculated_probability:
-        #        ... update state ...
-
         self.config = new_config
         
-        # Return True to stop the simulation, False to keep running
         return False
 
 if __name__ == '__main__':
