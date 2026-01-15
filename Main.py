@@ -11,7 +11,6 @@ class ParkinsonSim(Model):
         self.t = 0
         self.config = None
         self.sensitivity_matrix = None
-        self.dead_neurons = 0
 
         self.make_param('width', 150)
         self.make_param('height', 150)
@@ -92,12 +91,12 @@ class ParkinsonSim(Model):
         mask = (self.config != -1)
         number_neurons = np.sum(mask)
 
-        #number_dead_neurons = np.sum(self.config == 6)
+        number_dead_neurons = np.sum(self.config == 6)
 
         total_neuron = 4.5*10**5
         neuron_per_cel = total_neuron/number_neurons
-        perc_dead_neurons = round((self.dead_neurons/number_neurons) * 100,2)
-        neuron_representation = f'One cell = {neuron_per_cel} dopaminergic neurons'
+        perc_dead_neurons = round((number_dead_neurons/number_neurons) * 100,2)
+        neuron_representation = f'One cell = {int(neuron_per_cel)} dopaminergic neurons'
         percentage_dead_neurons = f'{perc_dead_neurons}% neurons dead'        
         plt.cla()
         # 3. Use plt.imshow() to render self.config
@@ -193,8 +192,6 @@ class ParkinsonSim(Model):
 
             if np.random.random() < p_degeneration:
                     new_value = current_value + 1
-                    if new_value == 6:
-                         self.dead_neurons += 1
             else:
                 new_value = current_value
             
