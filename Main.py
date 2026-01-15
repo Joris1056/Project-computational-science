@@ -13,8 +13,8 @@ class ParkinsonSim(Model):
 
         # 1. Define your parameters here
         # These will appear as sliders/input fields in the GUI
-        self.make_param('width', 50)
-        self.make_param('height', 50)
+        self.make_param('width', 150)
+        self.make_param('height', 150)
         self.make_param('k', 7)  # states
         self.make_param('infection_p_stage1', 0.1)
         self.make_param('infection_p_stage2', 0.2)
@@ -33,12 +33,30 @@ class ParkinsonSim(Model):
         """Initializes or resets the simulation state."""
         self.t = 0
         
+        # old way:
         # 2. Initialize your grid here (e.g., all zeros for healthy)
         # You could also 'infect' one cell in the center to start the process
-        self.config = np.zeros((self.height,self.width))
-        middle_x = self.width//2
-        middle_y = self.height//2
-        self.config[middle_y,middle_x] = 1
+        #self.config = np.zeros((self.height,self.width))
+        #middle_x = self.width//2
+        #middle_y = self.height//2
+        #self.config[middle_y,middle_x] = 1
+
+
+        self.config = np.full((self.height, self.width), -1.0)
+        
+        center_x = self.width * 0.35
+        for y in range(self.height):
+            for x in range(self.width):
+                nx = x / self.width
+                curve = (self.height * 0.2) + ((x - center_x)**2 / (self.width * 0.8)) - (x * 0.15)
+                min_dikte = self.height * 0.1
+                max_dikte = self.height * 0.25
+                dikte = min_dikte + (nx * (max_dikte - min_dikte))
+                
+                if y > curve and y < curve + dikte:
+                    self.config[y, x] = 0
+        
+
 
     def draw(self):
         """Handles the visualization of the grid."""
@@ -49,13 +67,12 @@ class ParkinsonSim(Model):
         # 3. Use plt.imshow() to render self.config
         # Note: Set vmin and vmax to keep the color scale consistent
         cmap = plt.get_cmap('YlOrRd')
-        if not plt.gca().yaxis_inverted():
-            plt.gca().invert_yaxis()
-        plt.imshow(self.config, interpolation='none', vmin=0, vmax=self.k - 1,
+        cmap.set_under('lightgrey')
+        plt.imshow(self.config, origin = 'lower', vmin=0, vmax=self.k - 1,
                 cmap=cmap)
         plt.axis('image')
-        plt.title(f'Time step: {self.t}')
-        plt.xlabel('lateral <-- medial --> lateral')
+        plt.title(f'Substantia Nigra Time step: {self.t}')
+        plt.xlabel('medial --> lateral')
         plt.ylabel('ventral <--> dorsal')
 
     def get_neighbours(self, y, x):
