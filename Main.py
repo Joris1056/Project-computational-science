@@ -12,19 +12,30 @@ class ParkinsonSim(Model):
         self.config = None
         self.sensitivity_matrix = None
 
+        #Here we are defining all the parameters
+
+        #size of the figure
         self.make_param('width', 150)
         self.make_param('height', 150)
-        self.make_param('k', 7)  # states
+
+        #amount of states
+        self.make_param('k', 7)  
+
+        #the probability of infection per stage
         self.make_param('infection_p_stage1', 0.1)
         self.make_param('infection_p_stage2', 0.2)
         self.make_param('infection_p_stage3', 0.3)
         self.make_param('infection_p_stage4', 0.4)
         self.make_param('infection_p_stage5', 0.5)
+
+        #the probability of degeneration per stage
         self.make_param('degeneration_p_stage1', 0.1)
         self.make_param('degeneration_p_stage2', 0.2)
         self.make_param('degeneration_p_stage3', 0.3)
         self.make_param('degeneration_p_stage4', 0.4)
         self.make_param('degeneration_p_stage5', 0.5)
+
+        #maybe if there is spontaneous degeneration then we have p spon deg.
         self.make_param('p_spontaneous_degeneration', 0)
         self.make_param('lateral_base_multiplier', 1)
         self.make_param('lateral_ratio_multiplication', 0.5)
@@ -140,7 +151,6 @@ class ParkinsonSim(Model):
     def get_neighbours(self, y, x):
         """
         Helper function to retrieve the states of the 8 neighbors (Moore neighborhood).
-        Tip: Use the modulo operator (%) to handle periodic boundary conditions (wrapping).
         """
         set_neighbours = set()
         for dx in range(-1, 2):
