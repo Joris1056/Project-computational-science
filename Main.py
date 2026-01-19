@@ -28,12 +28,17 @@ class ParkinsonSim(Model):
         self.make_param('p_spontaneous_degeneration', 0)
         self.make_param('lateral_base_multiplier', 1)
         self.make_param('lateral_ratio_multiplication', 0.5)
+        self.make_param('neuron_death', [])
+        self.make_param('time', [])
         #self.make_param('ventro_lateral_sens', 1.5)
         #self.make_param('medial_sens', 0.7)
 
     def reset(self):
         """Initializes or resets the simulation state."""
+        import matplotlib.pyplot as plt
         self.t = 0
+        self.time = []
+        self.neuron_death = []
         
         # old way:
         # 2. Initialize your grid here (e.g., all zeros for healthy)
@@ -81,6 +86,16 @@ class ParkinsonSim(Model):
                     break
             if found: 
                 break
+        
+        self.fig_neuron_alive, self.ax_neuron_alive = plt.subplots()
+        self.line_neuron_alive, = self.ax_neuron_alive.plot([], [])
+        self.ax_neuron_alive.set_xlabel('Time step')
+        self.ax_neuron_alive.axhline(y = 70, color = 'red', label = '30% cell death')
+        self.ax_neuron_alive.axhline(y = 40, color = 'green', label = '60% cell death')
+        self.ax_neuron_alive.set_ylabel('% live Neurons')
+        self.ax_neuron_alive.set_title('Neuron alive Over Time')
+        self.ax_neuron_alive.legend()
+
 
 
     def draw(self):
@@ -115,6 +130,12 @@ class ParkinsonSim(Model):
         plt.text(0.02, 0.85, percentage_dead_neurons, transform=plt.gca().transAxes, 
                  fontsize=9, verticalalignment='top',
                  bbox=dict(boxstyle='round', facecolor='white', alpha=0.7))
+
+        self.line_neuron_alive.set_data(self.time, 100 - np.array(self.neuron_death))
+        self.ax_neuron_alive.relim()
+        self.ax_neuron_alive.autoscale_view()
+        plt.pause(0.01)
+
 
     def get_neighbours(self, y, x):
         """
@@ -205,7 +226,17 @@ class ParkinsonSim(Model):
         Each step represents a progression in time (e.g., one day or week).
         """
         self.t += 1
+        self.time.append(self.t)
         new_config = np.copy(self.config)
+
+        mask = (self.config != -1)
+        number_neurons = np.sum(mask)
+        number_dead_neurons = np.sum(self.config == 6)
+        perc_dead_neurons = round((number_dead_neurons/number_neurons) * 100,2)
+        self.neuron_death.append(perc_dead_neurons)
+
+
+
         for x in range(self.width):
             for y in range(self.height):
                 cell_value = self.config[y,x]
@@ -216,6 +247,9 @@ class ParkinsonSim(Model):
                 new_config[y,x] = self.calculate_new_cell_value(cell_value,list_neighbour_value, y, x)
         
         self.config = new_config
+
+        if perc_dead_neurons >= 100.0:
+             return True
         
         return False
 
@@ -224,4 +258,5 @@ if __name__ == '__main__':
     sim = ParkinsonSim()
     cx = GUI(sim)
     cx.start()
+
 
