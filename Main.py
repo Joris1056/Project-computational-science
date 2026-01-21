@@ -39,8 +39,13 @@ class ParkinsonSim(Model):
         self.make_param('p_spontaneous_degeneration', 0)
         self.make_param('lateral_base_multiplier', 1)
         self.make_param('lateral_ratio_multiplication', 0.5)
-        self.make_param('neuron_death', [])
-        self.make_param('time', [])
+        self.neuron_death = []
+        self.time = []
+        self.time_years =  []
+        self.year_per_step = None
+        self.t_70 = None
+        self.t_30 =None
+        self.t_0 = None
         #self.make_param('ventro_lateral_sens', 1.5)
         #self.make_param('medial_sens', 0.7)
 
@@ -50,6 +55,11 @@ class ParkinsonSim(Model):
         self.t = 0
         self.time = []
         self.neuron_death = []
+        self.time_years = []
+        self.year_per_step = None
+        self.t_70 = None
+        self.t_30 = None
+        self.t_0 = None
         
         # old way:
         # 2. Initialize your grid here (e.g., all zeros for healthy)
@@ -78,13 +88,13 @@ class ParkinsonSim(Model):
 
         
         for y in range(self.height):
-             for x in range(self.width):
-                 if self.config[y,x] != -1:
-                      ratio_x = x/self.width
-                      ratio_y = y/self.height
-                      x_multiplier = self.lateral_base_multiplier + (ratio_x * self.lateral_ratio_multiplication)
-                      #y_multiplier = 0.1 + ((1 - ratio_y) * 0.1)
-                      self.sensitivity_matrix[y,x] = x_multiplier #+ y_multiplier
+            for x in range(self.width):
+                if self.config[y,x] != -1:
+                    ratio_x = x/self.width
+                    ratio_y = y/self.height
+                    x_multiplier = self.lateral_base_multiplier + (ratio_x * self.lateral_ratio_multiplication)
+                    #y_multiplier = 0.1 + ((1 - ratio_y) * 0.1)
+                    self.sensitivity_matrix[y,x] = x_multiplier #+ y_multiplier
 
         found = False
         for x in range(self.width - 1, 0, -1):
@@ -100,11 +110,8 @@ class ParkinsonSim(Model):
         
         self.fig_neuron_alive, self.ax_neuron_alive = plt.subplots()
         self.line_neuron_alive, = self.ax_neuron_alive.plot([], [])
-        self.ax_neuron_alive.set_xlabel('Time step')
-        self.ax_neuron_alive.axhline(y = 70, color = 'red', label = '30% cell death')
-        self.ax_neuron_alive.axhline(y = 40, color = 'green', label = '60% cell death')
         self.ax_neuron_alive.set_ylabel('% live Neurons')
-        self.ax_neuron_alive.set_title('Neuron alive Over Time')
+        self.ax_neuron_alive.set_title('Neurons alive Over Time')
         self.ax_neuron_alive.legend()
 
 
@@ -136,15 +143,46 @@ class ParkinsonSim(Model):
         plt.xlabel('medial --> lateral')
         plt.ylabel('ventral <--> dorsal')
         plt.text(0.02, 0.95, neuron_representation, transform=plt.gca().transAxes, 
-                 fontsize=9, verticalalignment='top',
-                 bbox=dict(boxstyle='round', facecolor='white', alpha=0.7))
+                fontsize=9, verticalalignment='top',
+                bbox=dict(boxstyle='round', facecolor='white', alpha=0.7))
         plt.text(0.02, 0.85, percentage_dead_neurons, transform=plt.gca().transAxes, 
-                 fontsize=9, verticalalignment='top',
-                 bbox=dict(boxstyle='round', facecolor='white', alpha=0.7))
+                fontsize=9, verticalalignment='top',
+                bbox=dict(boxstyle='round', facecolor='white', alpha=0.7))
 
-        self.line_neuron_alive.set_data(self.time, 100 - np.array(self.neuron_death))
+
+        if self.year_per_step is not None:
+            self.line_neuron_alive.set_data(self.time_years, 100 - np.array(self.neuron_death))
+        else:
+            self.line_neuron_alive.set_data(self.time, 100 - np.array(self.neuron_death))
+        
+        for line in self.ax_neuron_alive.lines[1:]:
+            line.remove()
+
+        if self.t_30 != None and self.year_per_step == None:
+            self.ax_neuron_alive.axvline(x = self.t_30, color = 'black', label = f't2 = {self.t_30}, 30% left')
+        
+        if self.t_30 != None and self.year_per_step != None:
+            self.ax_neuron_alive.axvline(x = self.t_30 * self.year_per_step, color = 'black', label = f'{round(self.t_30*self.year_per_step,1)}th year, 30% left')
+        
+        if self.t_70 != None and self.year_per_step == None:
+            self.ax_neuron_alive.axvline(x = self.t_70, color = 'black', label = f't1 = {self.t_70}, 70% left')
+        
+        if self.t_70 != None and self.year_per_step != None:
+            self.ax_neuron_alive.axvline(x = self.t_70 * self.year_per_step, color = 'black', label = f'{round(self.t_70*self.year_per_step,1)}th year, 70% left')
+        
+        if self.t_0 != None and self.year_per_step == None:
+            self.ax_neuron_alive.axvline(x = self.t_0, color = 'black', label = f't3 = {self.t_0}, 0% left')
+        
+        if self.t_0 != None and self.year_per_step != None:
+            self.ax_neuron_alive.axvline(x = self.t_0*self.year_per_step, color = 'black', label = f'{round(self.t_0*self.year_per_step,1)}th year, 0% left')
+        
+        if self.year_per_step == None:
+            self.ax_neuron_alive.set_xlabel('Time step')
+        if self.year_per_step != None:
+            self.ax_neuron_alive.set_xlabel('Time in years')
         self.ax_neuron_alive.relim()
         self.ax_neuron_alive.autoscale_view()
+        self.ax_neuron_alive.legend()
         plt.pause(0.01)
 
 
@@ -163,7 +201,7 @@ class ParkinsonSim(Model):
     
     def calculate_new_cell_value(self, current_value, neighbour_values, y, x):
         if current_value == -1:
-             return -1
+            return -1
         
         local_sensitivity = self.sensitivity_matrix[y,x]
 
@@ -243,6 +281,23 @@ class ParkinsonSim(Model):
         number_neurons = np.sum(mask)
         number_dead_neurons = np.sum(self.config == 6)
         perc_dead_neurons = round((number_dead_neurons/number_neurons) * 100,2)
+        perc_alive_neurons = 100 - perc_dead_neurons
+
+        if perc_alive_neurons <= 70.0 and self.t_70 == None:
+            self.t_70 = self.t
+        if perc_alive_neurons <= 30.0 and self.t_30 == None:
+            self.t_30 = self.t
+        if perc_dead_neurons == 100 and self.t_0 == None:
+            self.t_0 = self.t
+        
+        if self.t_70 != None and self.t_30 != None and self.year_per_step == None:
+            delta_step = self.t_30 - self.t_70
+            self.year_per_step = 10/delta_step
+        
+        if self.year_per_step is not None:
+            self.time_years = [i * self.year_per_step for i in self.time]
+
+
         self.neuron_death.append(perc_dead_neurons)
 
 
@@ -259,7 +314,7 @@ class ParkinsonSim(Model):
         self.config = new_config
 
         if perc_dead_neurons >= 100.0:
-             return True
+            return True
         
         return False
 
