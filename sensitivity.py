@@ -86,11 +86,16 @@ def run_one(
     dead_series = np.array(sim.neuron_death, dtype=float)  # in percent (0..100)
     if dead_series.size == 0:
         final_dead = 0.0
+        t30 = T + 1
         t60 = T + 1
     else:
         final_dead = float(dead_series[-1])
-        hit = np.where(dead_series >= 60.0)[0]
-        t60 = int(sim.time[int(hit[0])]) if hit.size > 0 else (T + 1)
+
+        hit30 = np.where(dead_series >= 30.0)[0]
+        t30 = int(sim.time[int(hit30[0])]) if hit30.size > 0 else (T + 1)
+
+        hit60 = np.where(dead_series >= 60.0)[0]
+        t60 = int(sim.time[int(hit60[0])]) if hit60.size > 0 else (T + 1)
 
     # Close any figures created in reset() to avoid memory growth
     plt.close("all")
@@ -104,6 +109,7 @@ def run_one(
         "T": T,
         "width": width,
         "height": height,
+        "time_to_30_dead": t30,
         "time_to_60_dead": t60,
         "final_dead_pct": final_dead,
     }
@@ -146,11 +152,15 @@ def screening_experiment(
                 )
             )
 
+    print(f"Finished parameter set {i+1}/{n_sets}", flush=True)
+
     df = pd.DataFrame(rows)
 
     # Aggregate replicates per parameter set (mean outcomes)
     group_cols = ["infection_scale", "degeneration_scale", "lateral_ratio_multiplication", "p_spontaneous_degeneration", "T", "width", "height"]
     agg = df.groupby(group_cols, as_index=False).agg(
+        time_to_30_dead_mean=("time_to_30_dead", "mean"),
+        time_to_30_dead_sd=("time_to_30_dead", "std"),
         time_to_60_dead_mean=("time_to_60_dead", "mean"),
         time_to_60_dead_sd=("time_to_60_dead", "std"),
         final_dead_pct_mean=("final_dead_pct", "mean"),
@@ -162,7 +172,7 @@ def screening_experiment(
 
 def spearman_importance(df: pd.DataFrame) -> pd.DataFrame:
     params = ["infection_scale", "degeneration_scale", "lateral_ratio_multiplication", "p_spontaneous_degeneration"]
-    outcomes = ["time_to_60_dead_mean", "final_dead_pct_mean"]
+    outcomes = ["time_to_30_dead_mean", "time_to_60_dead_mean", "final_dead_pct_mean"]
 
     rows = []
     for out in outcomes:
@@ -181,6 +191,7 @@ def plot_importance(imp: pd.DataFrame, outpath: str):
         "lateral_ratio_multiplication": "Heterogeneity (lateral gradient)",
     }
     outcome_map = {
+        "time_to_30_dead_mean": "Time to 30% dead (mean)",
         "time_to_60_dead_mean": "Time to 60% dead (mean)",
         "final_dead_pct_mean": "Final % dead (mean)",
     }
@@ -223,6 +234,7 @@ def plot_importance(imp: pd.DataFrame, outpath: str):
 
 
 def main():
+    print("Starting sensitivity analysis...")
     os.makedirs("outputs", exist_ok=True)
 
     df = screening_experiment(
@@ -230,7 +242,7 @@ def main():
         reps=3,
         width=150,
         height=150,
-        T=400,    
+        T=300,    
         seed0=1234,
     )
 
@@ -251,6 +263,7 @@ def main():
         print("\n", out)
         print(sub[["parameter", "spearman_rho"]].to_string(index=False))
 
+    print("Sensitivity analysis finished.", flush=True)
 
 if __name__ == "__main__":
     main()
