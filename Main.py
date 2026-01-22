@@ -45,9 +45,9 @@ class ParkinsonSim(Model):
         #maybe if there is spontaneous degeneration then we have p spon deg.
         self.make_param('p_spontaneous_degeneration', 0)
         self.make_param('lateral_base_multiplier', 1)
-        self.make_param('lateral_ratio_multiplication', 1)
+        self.make_param('lateral_ratio_multiplication', 1.5)
         self.make_param('ventral_base_multiplier', 1)
-        self.make_param('ventral_ratio_multiplication', 4)
+        self.make_param('ventral_ratio_multiplication', 4.5)
         
 
     def reset(self):
@@ -235,15 +235,25 @@ class ParkinsonSim(Model):
             p_no_infection_one_cell = []
             for value in sick_neighbours:
                 if value == 1:
-                    p_no_infection_one_cell.append(1-self.infection_p_stage1*local_sensitivity)
+                    raw_p = self.infection_p_stage1*local_sensitivity
+                    schaled_p = np.exp(-raw_p)
+                    p_no_infection_one_cell.append(schaled_p)
                 elif value == 2:
-                    p_no_infection_one_cell.append(1-self.infection_p_stage2*local_sensitivity)
+                    raw_p = self.infection_p_stage2*local_sensitivity
+                    schaled_p = np.exp(-raw_p)
+                    p_no_infection_one_cell.append(schaled_p)
                 elif value == 3:
-                    p_no_infection_one_cell.append(1-self.infection_p_stage3*local_sensitivity)
+                    raw_p = self.infection_p_stage3*local_sensitivity
+                    schaled_p = np.exp(-raw_p)
+                    p_no_infection_one_cell.append(schaled_p)
                 elif value == 4:
-                    p_no_infection_one_cell.append(1-self.infection_p_stage4*local_sensitivity)
+                    raw_p = self.infection_p_stage4*local_sensitivity
+                    schaled_p = np.exp(-raw_p)
+                    p_no_infection_one_cell.append(schaled_p)
                 elif value == 5:
-                    p_no_infection_one_cell.append(1-self.infection_p_stage5*local_sensitivity)
+                    raw_p = self.infection_p_stage5*local_sensitivity
+                    schaled_p = np.exp(-raw_p)
+                    p_no_infection_one_cell.append(schaled_p)
             
             p_no_infection = 1 - (self.p_spontaneous_degeneration * local_sensitivity)
             for i in range(0,len(p_no_infection_one_cell)):
@@ -261,19 +271,32 @@ class ParkinsonSim(Model):
         
         # internal progression
         p_degeneration = 0
+
+        dead_neighbours = 0
+        for value in neighbour_values:
+            if value == 6:
+                dead_neighbours += 1
+        
+        dead_neighbours_multiplier = 1 + 0.1 * dead_neighbours
+
         if current_value != 0 and current_value != 6:
             if current_value == 1:
-                    p_degeneration = self.degeneration_p_stage1*local_sensitivity
+                    p_degeneration = self.degeneration_p_stage1*local_sensitivity * dead_neighbours_multiplier
+                    p_degeneration_scaled = 1 - np.exp(-p_degeneration)
             elif current_value == 2:
-                    p_degeneration = self.degeneration_p_stage2*local_sensitivity
+                    p_degeneration = self.degeneration_p_stage2*local_sensitivity * dead_neighbours_multiplier
+                    p_degeneration_scaled = 1 - np.exp(-p_degeneration)
             elif current_value == 3:
-                    p_degeneration = self.degeneration_p_stage3*local_sensitivity
+                    p_degeneration = self.degeneration_p_stage3*local_sensitivity * dead_neighbours_multiplier
+                    p_degeneration_scaled = 1 - np.exp(-p_degeneration)
             elif current_value == 4:
-                    p_degeneration = self.degeneration_p_stage4*local_sensitivity
+                    p_degeneration = self.degeneration_p_stage4*local_sensitivity * dead_neighbours_multiplier
+                    p_degeneration_scaled = 1 - np.exp(-p_degeneration)
             elif current_value == 5:
-                    p_degeneration = self.degeneration_p_stage5*local_sensitivity
+                    p_degeneration = self.degeneration_p_stage5*local_sensitivity * dead_neighbours_multiplier
+                    p_degeneration_scaled = 1 - np.exp(-p_degeneration)
 
-            if np.random.random() < p_degeneration:
+            if np.random.random() < p_degeneration_scaled:
                     new_value = current_value + 1
             else:
                 new_value = current_value
