@@ -45,9 +45,10 @@ class ParkinsonSim(Model):
         #maybe if there is spontaneous degeneration then we have p spon deg.
         self.make_param('p_spontaneous_degeneration', 0)
         self.make_param('lateral_base_multiplier', 1)
-        self.make_param('lateral_ratio_multiplication', 1.5)
+        self.make_param('lateral_ratio_multiplication', 4)
         self.make_param('ventral_base_multiplier', 1)
-        self.make_param('ventral_ratio_multiplication', 4.5)
+        self.make_param('ventral_ratio_multiplication', 5)
+        self.make_param('dead_neighbour_multiplier', 0.05)
         
 
     def reset(self):
@@ -188,7 +189,7 @@ class ParkinsonSim(Model):
             self.ax_neuron_alive.axvline(x = self.t_0, color = 'lightblue', label = f't3 = {self.t_0}, 0% left')
         
         if self.t_0 != None and self.year_per_step != None:
-            self.ax_neuron_alive.axvline(x = self.t_0*self.year_per_step, color = 'black', label = f'{round(self.t_0*self.year_per_step,1)}th year, 0% left')
+            self.ax_neuron_alive.axvline(x = self.t_0*self.year_per_step, color = 'black', label = f'{round(self.t_0*self.year_per_step,1)}th year, 1% left')
         
         if self.year_per_step == None:
             self.ax_neuron_alive.set_xlabel('Time step')
@@ -277,7 +278,7 @@ class ParkinsonSim(Model):
             if value == 6:
                 dead_neighbours += 1
         
-        dead_neighbours_multiplier = 1 + 0.1 * dead_neighbours
+        dead_neighbours_multiplier = 1 + self.dead_neighbour_multiplier * dead_neighbours
 
         if current_value != 0 and current_value != 6:
             if current_value == 1:
@@ -324,7 +325,7 @@ class ParkinsonSim(Model):
             self.t_70 = self.t
         if perc_alive_neurons <= 30.0 and self.t_30 == None:
             self.t_30 = self.t
-        if perc_dead_neurons == 99.9 and self.t_0 == None:
+        if perc_dead_neurons >= 99.0 and self.t_0 == None:
             self.t_0 = self.t
         
         if self.t_70 != None and self.t_30 != None and self.year_per_step == None:
@@ -350,7 +351,7 @@ class ParkinsonSim(Model):
         
         self.config = new_config
 
-        if perc_dead_neurons >= 99.9:
+        if perc_dead_neurons >= 99.0:
             return True
         
         return False
