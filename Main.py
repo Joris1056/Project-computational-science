@@ -85,17 +85,27 @@ class ParkinsonSim(Model):
                 if y > curve and y < curve + dikte:
                     self.config[y, x] = 0
         
-        self.sensitivity_matrix = np.full((self.height, self.width), 0)
+        self.sn_bounds = {}
 
+        for x in range(self.width):
+            ys = np.where(self.config[:,x] != -1)[0]
+            if len(ys) > 0:
+                y_min = ys.min()
+                y_max = ys.max()
+                self.sn_bounds[x] = (y_min,y_max)
+        
+        self.sensitivity_matrix = np.full((self.height, self.width), 0)
+        
         
         for y in range(self.height):
             for x in range(self.width):
                 if self.config[y,x] != -1:
                     ratio_x = x/self.width
-                    ratio_y = y/self.height
+                    y_min,y_max = self.sn_bounds[x]
+                    relative_y = (y-y_min)/(y_max-y_min)
                     x_multiplier = self.lateral_base_multiplier + (ratio_x * self.lateral_ratio_multiplication)
-                    y_multiplier = self.ventral_base_multiplier + ((1 - ratio_y)* self.ventral_ratio_multiplication)
-                    self.sensitivity_matrix[y,x] = x_multiplier + y_multiplier
+                    y_multiplier = self.ventral_base_multiplier + ((1 - relative_y)* self.ventral_ratio_multiplication)
+                    self.sensitivity_matrix[y,x] = x_multiplier * y_multiplier
 
         found = False
         for x in range(self.width - 1, 0, -1):
