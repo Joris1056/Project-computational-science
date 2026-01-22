@@ -11,6 +11,13 @@ class ParkinsonSim(Model):
         self.t = 0
         self.config = None
         self.sensitivity_matrix = None
+        self.neuron_death = []
+        self.time = []
+        self.time_years =  []
+        self.year_per_step = None
+        self.t_70 = None
+        self.t_30 =None
+        self.t_0 = None
 
         #Here we are defining all the parameters
 
@@ -22,32 +29,26 @@ class ParkinsonSim(Model):
         self.make_param('k', 7)  
 
         #the probability of infection per stage
-        self.make_param('infection_p_stage1', 0.1)
-        self.make_param('infection_p_stage2', 0.2)
-        self.make_param('infection_p_stage3', 0.3)
-        self.make_param('infection_p_stage4', 0.4)
-        self.make_param('infection_p_stage5', 0.5)
+        self.make_param('infection_p_stage1', 0.02)
+        self.make_param('infection_p_stage2', 0.04)
+        self.make_param('infection_p_stage3', 0.08)
+        self.make_param('infection_p_stage4', 0.16)
+        self.make_param('infection_p_stage5', 0.32)
 
         #the probability of degeneration per stage
-        self.make_param('degeneration_p_stage1', 0.1)
-        self.make_param('degeneration_p_stage2', 0.2)
-        self.make_param('degeneration_p_stage3', 0.3)
-        self.make_param('degeneration_p_stage4', 0.4)
-        self.make_param('degeneration_p_stage5', 0.5)
+        self.make_param('degeneration_p_stage1', 0.02)
+        self.make_param('degeneration_p_stage2', 0.04)
+        self.make_param('degeneration_p_stage3', 0.08)
+        self.make_param('degeneration_p_stage4', 0.16)
+        self.make_param('degeneration_p_stage5', 0.32)
 
         #maybe if there is spontaneous degeneration then we have p spon deg.
         self.make_param('p_spontaneous_degeneration', 0)
         self.make_param('lateral_base_multiplier', 1)
-        self.make_param('lateral_ratio_multiplication', 0.5)
-        self.neuron_death = []
-        self.time = []
-        self.time_years =  []
-        self.year_per_step = None
-        self.t_70 = None
-        self.t_30 =None
-        self.t_0 = None
-        #self.make_param('ventro_lateral_sens', 1.5)
-        #self.make_param('medial_sens', 0.7)
+        self.make_param('lateral_ratio_multiplication', 1)
+        self.make_param('ventral_base_multiplier', 1)
+        self.make_param('ventral_ratio_multiplication', 1)
+        
 
     def reset(self):
         """Initializes or resets the simulation state."""
@@ -93,8 +94,8 @@ class ParkinsonSim(Model):
                     ratio_x = x/self.width
                     ratio_y = y/self.height
                     x_multiplier = self.lateral_base_multiplier + (ratio_x * self.lateral_ratio_multiplication)
-                    #y_multiplier = 0.1 + ((1 - ratio_y) * 0.1)
-                    self.sensitivity_matrix[y,x] = x_multiplier #+ y_multiplier
+                    y_multiplier = self.ventral_base_multiplier + ((1 - ratio_y)* self.ventral_ratio_multiplication)
+                    self.sensitivity_matrix[y,x] = x_multiplier + y_multiplier
 
         found = False
         for x in range(self.width - 1, 0, -1):
@@ -103,6 +104,9 @@ class ParkinsonSim(Model):
                 if self.config[y, x] == 0:
                     # Maak deze cel stadium 1 (beginnende degeneratie)
                     self.config[y, x] = 1
+                    neighbours = self.get_neighbours(y,x)
+                    for x,y in neighbours:
+                        self.config[y,x] = 1
                     found = True
                     break
             if found: 
@@ -287,7 +291,7 @@ class ParkinsonSim(Model):
             self.t_70 = self.t
         if perc_alive_neurons <= 30.0 and self.t_30 == None:
             self.t_30 = self.t
-        if perc_dead_neurons == 100 and self.t_0 == None:
+        if perc_dead_neurons == 99.9 and self.t_0 == None:
             self.t_0 = self.t
         
         if self.t_70 != None and self.t_30 != None and self.year_per_step == None:
@@ -313,7 +317,7 @@ class ParkinsonSim(Model):
         
         self.config = new_config
 
-        if perc_dead_neurons >= 100.0:
+        if perc_dead_neurons >= 99.9:
             return True
         
         return False
