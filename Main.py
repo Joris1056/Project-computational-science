@@ -47,7 +47,7 @@ class ParkinsonSim(Model):
         self.make_param('lateral_base_multiplier', 1)
         self.make_param('lateral_ratio_multiplication', 1)
         self.make_param('ventral_base_multiplier', 1)
-        self.make_param('ventral_ratio_multiplication', 1)
+        self.make_param('ventral_ratio_multiplication', 4)
         
 
     def reset(self):
@@ -103,8 +103,8 @@ class ParkinsonSim(Model):
                     ratio_x = x/self.width
                     y_min,y_max = self.sn_bounds[x]
                     relative_y = (y-y_min)/(y_max-y_min)
-                    x_multiplier = self.lateral_base_multiplier + (ratio_x * self.lateral_ratio_multiplication)
-                    y_multiplier = self.ventral_base_multiplier + ((1 - relative_y)* self.ventral_ratio_multiplication)
+                    x_multiplier = self.lateral_base_multiplier + (ratio_x**2 * self.lateral_ratio_multiplication)
+                    y_multiplier = self.ventral_base_multiplier + ((1 - relative_y)**2 * self.ventral_ratio_multiplication)
                     self.sensitivity_matrix[y,x] = x_multiplier * y_multiplier
 
         found = False
@@ -173,19 +173,19 @@ class ParkinsonSim(Model):
             line.remove()
 
         if self.t_30 != None and self.year_per_step == None:
-            self.ax_neuron_alive.axvline(x = self.t_30, color = 'black', label = f't2 = {self.t_30}, 30% left')
+            self.ax_neuron_alive.axvline(x = self.t_30, color = 'red', label = f't2 = {self.t_30}, 30% left')
         
         if self.t_30 != None and self.year_per_step != None:
             self.ax_neuron_alive.axvline(x = self.t_30 * self.year_per_step, color = 'black', label = f'{round(self.t_30*self.year_per_step,1)}th year, 30% left')
         
         if self.t_70 != None and self.year_per_step == None:
-            self.ax_neuron_alive.axvline(x = self.t_70, color = 'black', label = f't1 = {self.t_70}, 70% left')
+            self.ax_neuron_alive.axvline(x = self.t_70, color = 'green', label = f't1 = {self.t_70}, 70% left')
         
         if self.t_70 != None and self.year_per_step != None:
             self.ax_neuron_alive.axvline(x = self.t_70 * self.year_per_step, color = 'black', label = f'{round(self.t_70*self.year_per_step,1)}th year, 70% left')
         
         if self.t_0 != None and self.year_per_step == None:
-            self.ax_neuron_alive.axvline(x = self.t_0, color = 'black', label = f't3 = {self.t_0}, 0% left')
+            self.ax_neuron_alive.axvline(x = self.t_0, color = 'lightblue', label = f't3 = {self.t_0}, 0% left')
         
         if self.t_0 != None and self.year_per_step != None:
             self.ax_neuron_alive.axvline(x = self.t_0*self.year_per_step, color = 'black', label = f'{round(self.t_0*self.year_per_step,1)}th year, 0% left')
