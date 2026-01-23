@@ -17,12 +17,12 @@ target_data = {
     40:1,
 }
 
-def calculate_RMSE(sim_years, sim_percentages, target_data):
+def calculate_RMSE(sim_y70, sim_years, sim_percentages, target_data):
 
     error = []
 
     for years, percentage in target_data.items():
-        index = (np.abs(np.array(sim_years) - years)).argmin()
+        index = (np.abs(np.array(sim_years-sim_y70) - years)).argmin()
         sim_value = sim_percentages[index]
 
         squared_error = (sim_value - percentage)**2
@@ -70,11 +70,11 @@ def random_search(iterations, n_runs_per_set):
                     break
             
             neuron_alive = 100 - np.array(sim.neuron_death)
-            current_RMSE = calculate_RMSE(sim.time_years, neuron_alive, target_data)
-            print(current_RMSE)
+            current_RMSE = calculate_RMSE(sim.t_70*sim.year_per_step,sim.time_years, neuron_alive, target_data)
             sim_RMSE.append(current_RMSE)
         
         mean_RMSE_set = np.mean(sim_RMSE)
+        print(mean_RMSE_set)
         results.append({'iteratie': i, 'rmse': mean_RMSE_set,  **params})
 
         if mean_RMSE_set < best_RMSE:
