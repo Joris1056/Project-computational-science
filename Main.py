@@ -5,8 +5,9 @@ import numpy as np
 from pyics import Model
 
 class ParkinsonSim(Model):
-    def __init__(self):
+    def __init__(self, visualize = True):
         Model.__init__(self)
+        self.visualize = visualize
 
         self.t = 0
         self.config = None
@@ -45,7 +46,7 @@ class ParkinsonSim(Model):
         #maybe if there is spontaneous degeneration then we have p spon deg.
         self.make_param('p_spontaneous_degeneration', 0)
         self.make_param('lateral_base_multiplier', 1)
-        self.make_param('lateral_ratio_multiplication', 4)
+        self.make_param('lateral_ratio_multiplication', 3)
         self.make_param('ventral_base_multiplier', 1)
         self.make_param('ventral_ratio_multiplication', 5)
         self.make_param('dead_neighbour_multiplier', 0.05)
@@ -53,7 +54,14 @@ class ParkinsonSim(Model):
 
     def reset(self):
         """Initializes or resets the simulation state."""
-        import matplotlib.pyplot as plt
+        if self.visualize:
+            import matplotlib.pyplot as plt
+            self.fig_neuron_alive, self.ax_neuron_alive = plt.subplots()
+            self.line_neuron_alive, = self.ax_neuron_alive.plot([], [])
+            self.ax_neuron_alive.set_ylabel('% live Neurons')
+            self.ax_neuron_alive.set_title('Neurons alive Over Time')
+            self.ax_neuron_alive.legend()
+
         self.t = 0
         self.time = []
         self.neuron_death = []
@@ -120,19 +128,16 @@ class ParkinsonSim(Model):
                         self.config[y,x] = 1
                     found = True
                     break
-            if found: 
-                break
-        
-        self.fig_neuron_alive, self.ax_neuron_alive = plt.subplots()
-        self.line_neuron_alive, = self.ax_neuron_alive.plot([], [])
-        self.ax_neuron_alive.set_ylabel('% live Neurons')
-        self.ax_neuron_alive.set_title('Neurons alive Over Time')
-        self.ax_neuron_alive.legend()
+            if found:
+                break 
+    
 
 
 
     def draw(self):
         """Handles the visualization of the grid."""
+        if not self.visualize:
+            return 
         import matplotlib
         import matplotlib.pyplot as plt
 
