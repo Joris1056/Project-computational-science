@@ -30,15 +30,13 @@ def calculate_RMSE(sim_years, sim_percentages, target_data):
 
     return np.sqrt(np.mean(error))
 
-def random_search(iterations):
+def random_search(iterations, n_runs_per_set):
     best_RMSE = float('inf')
     best_params = {}
     results = []
 
     for i in range(iterations):
         print(i)
-        sim = ParkinsonSim(visualize=False)
-        sim.reset()
         
         params = {
             'infection_p_stage1':np.random.uniform(0.01, 0.05),
@@ -57,23 +55,30 @@ def random_search(iterations):
             'ventral_ratio_multiplication':np.random.uniform(1, 6),
             'dead_neighbour_multiplier':np.random.uniform(0.05, 0.1),
         }
-
-        for name, value in params.items():
-            setattr(sim,name,value)
         
-        done = False
-        while not done:
-            done = sim.step()
-            if sim.t > 2000:
-                break
-        
-        neuron_alive = 100 - np.array(sim.neuron_death)
-        current_RMSE = calculate_RMSE(sim.time_years, neuron_alive, target_data)
-        results.append({'iteratie': i, 'rmse': current_RMSE,  **params})
-        print(current_RMSE)
+        sim_RMSE = []
+        for run in range(n_runs_per_set):
+            sim = ParkinsonSim(visualize=False)
+            sim.reset()
+            for name, value in params.items():
+                setattr(sim,name,value)
 
-        if current_RMSE < best_RMSE:
-            best_RMSE = current_RMSE
+            done = False
+            while not done:
+                done = sim.step()
+                if sim.t > 2000:
+                    break
+            
+            neuron_alive = 100 - np.array(sim.neuron_death)
+            current_RMSE = calculate_RMSE(sim.time_years, neuron_alive, target_data)
+            print(current_RMSE)
+            sim_RMSE.append(current_RMSE)
+        
+        mean_RMSE_set = np.mean(sim_RMSE)
+        results.append({'iteratie': i, 'rmse': mean_RMSE_set,  **params})
+
+        if mean_RMSE_set < best_RMSE:
+            best_RMSE = mean_RMSE_set
             best_params = params
         
 
@@ -81,13 +86,15 @@ def random_search(iterations):
     return best_params, best_RMSE, results
 
 if __name__ == "__main__":
-    best_params, best_RMSE, results = random_search(10)
+    best_params, best_RMSE, results = random_search(3, 2)
 
     print(f'best RMSE = {best_RMSE}')
     for name, value in best_params.items():
         print(f'best {name} = {value}')
      
     df = pd.DataFrame(results)
-    print(df)
-    
 
+    correlations = df.corr()['rmse'].sort_values()
+    print(f'correlations are {correlations}')
+    df.to_csv("random_search_results.csv", index=False)
+    df = pd.read_csv("random_search_results.csv")
