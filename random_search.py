@@ -22,7 +22,7 @@ def calculate_RMSE(sim_y70, sim_years, sim_percentages, target_data):
     error = []
 
     for years, percentage in target_data.items():
-        index = (np.abs(np.array(sim_years-sim_y70) - years)).argmin()
+        index = (np.abs((np.array(sim_years) - sim_y70) - years)).argmin()
         sim_value = sim_percentages[index]
 
         squared_error = (sim_value - percentage)**2
