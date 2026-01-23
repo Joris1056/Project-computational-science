@@ -146,7 +146,7 @@ class ParkinsonSim(Model):
 
         number_dead_neurons = np.sum(self.config == 6)
 
-        total_neuron = 4.5*10**5
+        total_neuron = 5.5*10**5
         neuron_per_cel = total_neuron/number_neurons
         perc_dead_neurons = round((number_dead_neurons/number_neurons) * 100,2)
         neuron_representation = f'One cell = {int(neuron_per_cel)} dopaminergic neurons'
