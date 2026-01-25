@@ -17,12 +17,12 @@ target_data = {
     40:1,
 }
 
-def calculate_RMSE(sim_y70, sim_years, sim_percentages, target_data):
+def calculate_RMSE(shifted_years, sim_percentages, target_data):
 
     error = []
 
     for years, percentage in target_data.items():
-        index = (np.abs((np.array(sim_years) - sim_y70) - years)).argmin()
+        index = (np.abs(np.array(shifted_years) - years)).argmin()
         sim_value = sim_percentages[index]
 
         squared_error = (sim_value - percentage)**2
@@ -39,21 +39,21 @@ def random_search(iterations, n_runs_per_set):
         print(i)
         
         params = {
-            'infection_p_stage1':np.random.uniform(0.01, 0.9),
-            'infection_p_stage2':np.random.uniform(0.02, 0.9),
-            'infection_p_stage3':np.random.uniform(0.03, 0.9),
-            'infection_p_stage4':np.random.uniform(0.04, 0.9),
-            'infection_p_stage5':np.random.uniform(0.05, 0.9),
-            'degeneration_p_stage1':np.random.uniform(0.01, 0.9),
-            'degeneration_p_stage2':np.random.uniform(0.02, 0.9),
-            'degeneration_p_stage3':np.random.uniform(0.03, 0.9),
-            'degeneration_p_stage4':np.random.uniform(0.04, 0.9),
-            'degeneration_p_stage5':np.random.uniform(0.05, 0.9),
-            'lateral_base_multiplier':np.random.uniform(0.2, 2 ),
-            'lateral_ratio_multiplication':np.random.uniform(0.5, 10),
-            'ventral_base_multiplier':np.random.uniform(0.2, 2),
-            'ventral_ratio_multiplication':np.random.uniform(0.5, 10),
-            'dead_neighbour_multiplier':np.random.uniform(0.01, 1),
+            'infection_p_stage1':np.random.uniform(0.01, 0.05),
+            'infection_p_stage2':np.random.uniform(0.02, 0.1),
+            'infection_p_stage3':np.random.uniform(0.03, 0.15),
+            'infection_p_stage4':np.random.uniform(0.04, 0.2),
+            'infection_p_stage5':np.random.uniform(0.05, 0.25),
+            'degeneration_p_stage1':np.random.uniform(0.01, 0.05),
+            'degeneration_p_stage2':np.random.uniform(0.02, 0.1),
+            'degeneration_p_stage3':np.random.uniform(0.03, 0.15),
+            'degeneration_p_stage4':np.random.uniform(0.04, 0.20),
+            'degeneration_p_stage5':np.random.uniform(0.05, 0.25),
+            'lateral_base_multiplier':np.random.uniform(0.8, 1.5),
+            'lateral_ratio_multiplication':np.random.uniform(1, 6),
+            'ventral_base_multiplier':np.random.uniform(0.8, 1.5),
+            'ventral_ratio_multiplication':np.random.uniform(1, 6),
+            'dead_neighbour_multiplier':np.random.uniform(0.05, 0.1),
         }
         
         sim_RMSE = []
@@ -70,7 +70,8 @@ def random_search(iterations, n_runs_per_set):
                     break
             
             neuron_alive = 100 - np.array(sim.neuron_death)
-            current_RMSE = calculate_RMSE(sim.t_70*sim.year_per_step,sim.time_years, neuron_alive, target_data)
+            shifted_years = np.array(sim.time_years) - (sim.t_70 * sim.year_per_step)
+            current_RMSE = calculate_RMSE(shifted_years, neuron_alive, target_data)
             sim_RMSE.append(current_RMSE)
         
         mean_RMSE_set = np.mean(sim_RMSE)
@@ -86,7 +87,7 @@ def random_search(iterations, n_runs_per_set):
     return best_params, best_RMSE, results
 
 if __name__ == "__main__":
-    best_params, best_RMSE, results = random_search(10, 1)
+    best_params, best_RMSE, results = random_search(5, 1)
 
     print(f'best RMSE = {best_RMSE}')
     for name, value in best_params.items():
