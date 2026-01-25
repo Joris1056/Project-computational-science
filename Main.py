@@ -30,26 +30,26 @@ class ParkinsonSim(Model):
         self.make_param('k', 7)  
 
         #the probability of infection per stage
-        self.make_param('infection_p_stage1', 0.02)
-        self.make_param('infection_p_stage2', 0.04)
-        self.make_param('infection_p_stage3', 0.08)
-        self.make_param('infection_p_stage4', 0.16)
-        self.make_param('infection_p_stage5', 0.32)
+        self.make_param('infection_p_stage1', 0.036)
+        self.make_param('infection_p_stage2', 0.031)
+        self.make_param('infection_p_stage3', 0.072)
+        self.make_param('infection_p_stage4', 0.093)
+        self.make_param('infection_p_stage5', 0.246)
 
         #the probability of degeneration per stage
-        self.make_param('degeneration_p_stage1', 0.02)
-        self.make_param('degeneration_p_stage2', 0.04)
-        self.make_param('degeneration_p_stage3', 0.08)
-        self.make_param('degeneration_p_stage4', 0.16)
-        self.make_param('degeneration_p_stage5', 0.32)
+        self.make_param('degeneration_p_stage1', 0.01)
+        self.make_param('degeneration_p_stage2', 0.027)
+        self.make_param('degeneration_p_stage3', 0.118)
+        self.make_param('degeneration_p_stage4', 0.094)
+        self.make_param('degeneration_p_stage5', 0.065)
 
         #maybe if there is spontaneous degeneration then we have p spon deg.
         self.make_param('p_spontaneous_degeneration', 0)
-        self.make_param('lateral_base_multiplier', 1)
-        self.make_param('lateral_ratio_multiplication', 3)
-        self.make_param('ventral_base_multiplier', 1)
-        self.make_param('ventral_ratio_multiplication', 5)
-        self.make_param('dead_neighbour_multiplier', 0.05)
+        self.make_param('lateral_base_multiplier', 1.446)
+        self.make_param('lateral_ratio_multiplication', 1.293)
+        self.make_param('ventral_base_multiplier', 0.813)
+        self.make_param('ventral_ratio_multiplication', 1.505)
+        self.make_param('dead_neighbour_multiplier', 0.08)
         
 
     def reset(self):
