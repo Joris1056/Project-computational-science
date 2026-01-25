@@ -171,7 +171,7 @@ class ParkinsonSim(Model):
 
 
         if self.year_per_step is not None:
-            self.line_neuron_alive.set_data(self.time_years, 100 - np.array(self.neuron_death))
+            self.line_neuron_alive.set_data(np.array(self.time_years) - self.t_70 * self.year_per_step, 100 - np.array(self.neuron_death))
         else:
             self.line_neuron_alive.set_data(self.time, 100 - np.array(self.neuron_death))
         
