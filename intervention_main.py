@@ -53,7 +53,7 @@ class ParkinsonSim_intervention(Model):
         self.make_param('dead_neighbour_multiplier', 0.03)
 
         #now we add the parameters for the treatment:
-        self.make_param('treatment_aplha_syn', 1)
+        self.make_param('treatment_alpha_syn', 1)
 
         #now lets add the year per step parameter, that we calculated earlier
         self.make_param('year_per_step',1)
