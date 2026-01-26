@@ -1,4 +1,4 @@
-#here we are building a new main function with updated time logic
+#here we add the interventions against the disease
 
 
 # Main
