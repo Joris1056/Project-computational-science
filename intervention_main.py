@@ -76,6 +76,9 @@ class ParkinsonSim_intervention(Model):
         self.t_70 = None
         self.t_30 = None
         self.t_0 = None
+        self.t_70_years = None
+        self.t_30_years = None  
+        self.t_0_years = None   
         
         # old way:
         # 2. Initialize your grid here (e.g., all zeros for healthy)
@@ -175,30 +178,21 @@ class ParkinsonSim_intervention(Model):
 
 
         if self.t_70 is not None:
-            self.line_neuron_alive.set_data(np.array(self.time_years) - self.t_70 * self.year_per_step, 100 - np.array(self.neuron_death))
+            self.line_neuron_alive.set_data(np.array(self.time_years) - self.t_70_years, 100 - np.array(self.neuron_death))
+            self.ax_neuron_alive.axvline(x = self.t_70_years-self.t_70_years, color = 'black', linestyle = '--', label = f'{round(self.t_70_years,2)}th year, 70% left')
         else:
-            self.line_neuron_alive.set_data(self.time, 100 - np.array(self.neuron_death))
+            self.line_neuron_alive.set_data(self.time_years, 100 - np.array(self.neuron_death))
         
         for line in self.ax_neuron_alive.lines[1:]:
             line.remove()
+        
 
-        if self.t_30 != None and self.year_per_step == None:
-            self.ax_neuron_alive.axvline(x = self.t_30, color = 'red',linestyle = '--', label = f't2 = {self.t_30}, 30% left')
+
+        if self.t_30_years != None:
+            self.ax_neuron_alive.axvline(x = self.t_30_years, color = 'green', linestyle = '--',label = f'{round(self.t_30 * self.year_per_step,2)}th year, 30% left)')
         
-        if self.t_30 != None and self.year_per_step != None:
-            self.ax_neuron_alive.axvline(x = (self.t_30-self.t_70) * self.year_per_step, color = 'black',linestyle = '--', label = f'{round((self.t_30- self.t_70)*self.year_per_step,1)}th year, 30% left')
-        
-        if self.t_70 != None and self.year_per_step == None:
-            self.ax_neuron_alive.axvline(x = self.t_70, color = 'green', linestyle = '--',label = f't1 = {self.t_70}, 70% left, intervention started')
-        
-        if self.t_70 != None and self.year_per_step != None:
-            self.ax_neuron_alive.axvline(x = (self.t_70-self.t_70) * self.year_per_step,linestyle = '--', color = 'black', label = f'{round((self.t_70-self.t_70)*self.year_per_step,1)}th year, 70% left')
-        
-        if self.t_0 != None and self.year_per_step == None:
-            self.ax_neuron_alive.axvline(x = self.t_0, color = 'lightblue', linestyle = '--',label = f't3 = {self.t_0}, 0% left')
-        
-        if self.t_0 != None and self.year_per_step != None:
-            self.ax_neuron_alive.axvline(x = (self.t_0 -self.t_70)*self.year_per_step, linestyle = '--', color = 'black', label = f'{round((self.t_0-self.t_70)*self.year_per_step,1)}th year, 1% left')
+        if self.t_0_years != None:
+            self.ax_neuron_alive.axvline(x = self.t_0_years, linestyle = '--', color = 'black', label = f'{round((self.t_0-self.t_70)*self.year_per_step,1)}th year, 1% left')
         
         if self.year_per_step == None:
             self.ax_neuron_alive.set_xlabel('Time step')
@@ -343,10 +337,13 @@ class ParkinsonSim_intervention(Model):
 
         if perc_alive_neurons <= 70.0 and self.t_70 == None:
             self.t_70 = self.t
+            self.t_70_years = self.t * self.year_per_step
         if perc_alive_neurons <= 30.0 and self.t_30 == None:
             self.t_30 = self.t
+            self.t_30_years = self.t * self.year_per_step
         if perc_dead_neurons >= 99.0 and self.t_0 == None:
             self.t_0 = self.t
+            self.t_0_years = self.t * self.year_per_step
 
 
         self.neuron_death.append(perc_dead_neurons)
