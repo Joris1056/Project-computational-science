@@ -56,7 +56,7 @@ class ParkinsonSim_intervention(Model):
         self.make_param('treatment_alpha_syn', 1)
 
         #now lets add the year per step parameter, that we calculated earlier
-        self.make_param('year_per_step',1)
+        self.make_param('year_per_step',0.103)
         
 
     def reset(self):
@@ -179,20 +179,20 @@ class ParkinsonSim_intervention(Model):
 
         if self.t_70 is not None:
             self.line_neuron_alive.set_data(np.array(self.time_years) - self.t_70_years, 100 - np.array(self.neuron_death))
-            self.ax_neuron_alive.axvline(x = self.t_70_years-self.t_70_years, color = 'black', linestyle = '--', label = f'{round(self.t_70_years,2)}th year, 70% left')
         else:
             self.line_neuron_alive.set_data(self.time_years, 100 - np.array(self.neuron_death))
         
         for line in self.ax_neuron_alive.lines[1:]:
             line.remove()
         
-
+        if self.t_70_years != None:
+            self.ax_neuron_alive.axvline(x = self.t_70_years-self.t_70_years, color = 'black', linestyle = '--', label = f'{round(self.t_70_years-self.t_70_years,2)}th year, 70% left')
 
         if self.t_30_years != None:
-            self.ax_neuron_alive.axvline(x = self.t_30_years, color = 'green', linestyle = '--',label = f'{round(self.t_30 * self.year_per_step,2)}th year, 30% left)')
+            self.ax_neuron_alive.axvline(x = self.t_30_years-self.t_70_years, color = 'green', linestyle = '--',label = f'{round(self.t_30_years-self.t_70_years,2)}th year, 30% left)')
         
         if self.t_0_years != None:
-            self.ax_neuron_alive.axvline(x = self.t_0_years, linestyle = '--', color = 'black', label = f'{round((self.t_0-self.t_70)*self.year_per_step,1)}th year, 1% left')
+            self.ax_neuron_alive.axvline(x = self.t_0_years-self.t_70_years, linestyle = '--', color = 'black', label = f'{round(self.t_0_years-self.t_70_years,1)}th year, 1% left')
         
         if self.year_per_step == None:
             self.ax_neuron_alive.set_xlabel('Time step')

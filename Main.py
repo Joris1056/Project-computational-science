@@ -334,6 +334,7 @@ class ParkinsonSim(Model):
         if self.t_70 != None and self.t_30 != None and self.year_per_step == None:
             delta_step = self.t_30 - self.t_70
             self.year_per_step = 10/delta_step
+            print(self.year_per_step)
         
         if self.year_per_step is not None:
             self.time_years = [i * self.year_per_step for i in self.time]
