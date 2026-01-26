@@ -6,7 +6,7 @@
 import numpy as np
 from pyics import Model
 
-class ParkinsonSim(Model):
+class ParkinsonSim_intervention(Model):
     def __init__(self, visualize = True):
         Model.__init__(self)
         self.visualize = visualize
