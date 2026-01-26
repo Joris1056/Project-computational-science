@@ -30,26 +30,26 @@ class ParkinsonSim(Model):
         self.make_param('k', 7)  
 
         #the probability of infection per stage
-        self.make_param('infection_p_stage1', 0.036)
-        self.make_param('infection_p_stage2', 0.031)
-        self.make_param('infection_p_stage3', 0.072)
-        self.make_param('infection_p_stage4', 0.093)
-        self.make_param('infection_p_stage5', 0.246)
+        self.make_param('infection_p_stage1', 0.03)
+        self.make_param('infection_p_stage2', 0.06)
+        self.make_param('infection_p_stage3', 0.12)
+        self.make_param('infection_p_stage4', 0.24)
+        self.make_param('infection_p_stage5', 0.48)
 
         #the probability of degeneration per stage
-        self.make_param('degeneration_p_stage1', 0.01)
-        self.make_param('degeneration_p_stage2', 0.027)
-        self.make_param('degeneration_p_stage3', 0.118)
-        self.make_param('degeneration_p_stage4', 0.094)
-        self.make_param('degeneration_p_stage5', 0.065)
+        self.make_param('degeneration_p_stage1', 0.03)
+        self.make_param('degeneration_p_stage2', 0.06)
+        self.make_param('degeneration_p_stage3', 0.12)
+        self.make_param('degeneration_p_stage4', 0.24)
+        self.make_param('degeneration_p_stage5', 0.48)
 
         #maybe if there is spontaneous degeneration then we have p spon deg.
         self.make_param('p_spontaneous_degeneration', 0)
-        self.make_param('lateral_base_multiplier', 1.446)
-        self.make_param('lateral_ratio_multiplication', 1.293)
-        self.make_param('ventral_base_multiplier', 0.813)
-        self.make_param('ventral_ratio_multiplication', 1.505)
-        self.make_param('dead_neighbour_multiplier', 0.08)
+        self.make_param('lateral_base_multiplier', 1)
+        self.make_param('lateral_ratio_multiplication', 3)
+        self.make_param('ventral_base_multiplier', 1)
+        self.make_param('ventral_ratio_multiplication', 6)
+        self.make_param('dead_neighbour_multiplier', 0.03)
         
 
     def reset(self):
@@ -87,11 +87,11 @@ class ParkinsonSim(Model):
             for x in range(self.width):
                 nx = x / self.width
                 curve = (self.height * 0.2) + ((x - center_x)**2 / (self.width * 0.8)) - (x * 0.15)
-                min_dikte = self.height * 0.1
-                max_dikte = self.height * 0.25
-                dikte = min_dikte + (nx * (max_dikte - min_dikte))
+                min_width = self.height * 0.1
+                max_width = self.height * 0.25
+                width = min_width + (nx * (max_width - min_width))
                 
-                if y > curve and y < curve + dikte:
+                if y > curve and y < curve + width:
                     self.config[y, x] = 0
         
         self.sn_bounds = {}
@@ -119,9 +119,7 @@ class ParkinsonSim(Model):
         found = False
         for x in range(self.width - 1, 0, -1):
             for y in range(self.height):
-                # Check of dit punt in onze SN-vorm ligt
                 if self.config[y, x] == 0:
-                    # Maak deze cel stadium 1 (beginnende degeneratie)
                     self.config[y, x] = 1
                     neighbours = self.get_neighbours(y,x)
                     for x,y in neighbours:
@@ -179,22 +177,22 @@ class ParkinsonSim(Model):
             line.remove()
 
         if self.t_30 != None and self.year_per_step == None:
-            self.ax_neuron_alive.axvline(x = self.t_30, color = 'red', label = f't2 = {self.t_30}, 30% left')
+            self.ax_neuron_alive.axvline(x = self.t_30, color = 'red',linestyle = '--', label = f't2 = {self.t_30}, 30% left')
         
         if self.t_30 != None and self.year_per_step != None:
-            self.ax_neuron_alive.axvline(x = self.t_30 * self.year_per_step, color = 'black', label = f'{round(self.t_30*self.year_per_step,1)}th year, 30% left')
+            self.ax_neuron_alive.axvline(x = (self.t_30-self.t_70) * self.year_per_step, color = 'black',linestyle = '--', label = f'{round((self.t_30- self.t_70)*self.year_per_step,1)}th year, 30% left')
         
         if self.t_70 != None and self.year_per_step == None:
-            self.ax_neuron_alive.axvline(x = self.t_70, color = 'green', label = f't1 = {self.t_70}, 70% left')
+            self.ax_neuron_alive.axvline(x = self.t_70, color = 'green', linestyle = '--',label = f't1 = {self.t_70}, 70% left')
         
         if self.t_70 != None and self.year_per_step != None:
-            self.ax_neuron_alive.axvline(x = self.t_70 * self.year_per_step, color = 'black', label = f'{round(self.t_70*self.year_per_step,1)}th year, 70% left')
+            self.ax_neuron_alive.axvline(x = (self.t_70-self.t_70) * self.year_per_step,linestyle = '--', color = 'black', label = f'{round((self.t_70-self.t_70)*self.year_per_step,1)}th year, 70% left')
         
         if self.t_0 != None and self.year_per_step == None:
-            self.ax_neuron_alive.axvline(x = self.t_0, color = 'lightblue', label = f't3 = {self.t_0}, 0% left')
+            self.ax_neuron_alive.axvline(x = self.t_0, color = 'lightblue', linestyle = '--',label = f't3 = {self.t_0}, 0% left')
         
         if self.t_0 != None and self.year_per_step != None:
-            self.ax_neuron_alive.axvline(x = self.t_0*self.year_per_step, color = 'black', label = f'{round(self.t_0*self.year_per_step,1)}th year, 1% left')
+            self.ax_neuron_alive.axvline(x = (self.t_0 -self.t_70)*self.year_per_step, linestyle = '--', color = 'black', label = f'{round((self.t_0-self.t_70)*self.year_per_step,1)}th year, 1% left')
         
         if self.year_per_step == None:
             self.ax_neuron_alive.set_xlabel('Time step')
