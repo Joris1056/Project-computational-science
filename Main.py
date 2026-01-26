@@ -288,20 +288,20 @@ class ParkinsonSim(Model):
 
         if current_value != 0 and current_value != 6:
             if current_value == 1:
-                    p_degeneration = self.degeneration_p_stage1*local_sensitivity * dead_neighbours_multiplier * self.treatment_aplha_syn
-                    p_degeneration_scaled = 1 - np.exp(-p_degeneration)
+                    p_degeneration = self.degeneration_p_stage1*local_sensitivity * dead_neighbours_multiplier
+                    p_degeneration_scaled = 1 - np.exp(-p_degeneration) * self.treatment_aplha_syn
             elif current_value == 2:
-                    p_degeneration = self.degeneration_p_stage2*local_sensitivity * dead_neighbours_multiplier * self.treatment_aplha_syn
-                    p_degeneration_scaled = 1 - np.exp(-p_degeneration)
+                    p_degeneration = self.degeneration_p_stage2*local_sensitivity * dead_neighbours_multiplier
+                    p_degeneration_scaled = 1 - np.exp(-p_degeneration) * self.treatment_aplha_syn
             elif current_value == 3:
-                    p_degeneration = self.degeneration_p_stage3*local_sensitivity * dead_neighbours_multiplier * self.treatment_aplha_syn
-                    p_degeneration_scaled = 1 - np.exp(-p_degeneration)
+                    p_degeneration = self.degeneration_p_stage3*local_sensitivity * dead_neighbours_multiplier 
+                    p_degeneration_scaled = 1 - np.exp(-p_degeneration) * self.treatment_aplha_syn
             elif current_value == 4:
-                    p_degeneration = self.degeneration_p_stage4*local_sensitivity * dead_neighbours_multiplier * self.treatment_aplha_syn
-                    p_degeneration_scaled = 1 - np.exp(-p_degeneration)
+                    p_degeneration = self.degeneration_p_stage4*local_sensitivity * dead_neighbours_multiplier 
+                    p_degeneration_scaled = 1 - np.exp(-p_degeneration) * self.treatment_aplha_syn
             elif current_value == 5:
-                    p_degeneration = self.degeneration_p_stage5*local_sensitivity * dead_neighbours_multiplier * self.treatment_aplha_syn
-                    p_degeneration_scaled = 1 - np.exp(-p_degeneration)
+                    p_degeneration = self.degeneration_p_stage5*local_sensitivity * dead_neighbours_multiplier 
+                    p_degeneration_scaled = 1 - np.exp(-p_degeneration) * self.treatment_aplha_syn
 
             if np.random.random() < p_degeneration_scaled:
                     new_value = current_value + 1
