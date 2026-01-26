@@ -17,7 +17,6 @@ class ParkinsonSim(Model):
         self.neuron_death = []
         self.time = []
         self.time_years =  []
-        self.year_per_step = None
         self.t_70 = None
         self.t_30 =None
         self.t_0 = None
@@ -55,6 +54,9 @@ class ParkinsonSim(Model):
 
         #now we add the parameters for the treatment:
         self.make_param('treatment_aplha_syn', 1)
+
+        #now lets add the year per step parameter, that we calculated earlier
+        self.make_param('year_per_steap',1)
         
 
     def reset(self):
@@ -71,7 +73,6 @@ class ParkinsonSim(Model):
         self.time = []
         self.neuron_death = []
         self.time_years = []
-        self.year_per_step = None
         self.t_70 = None
         self.t_30 = None
         self.t_0 = None
@@ -336,13 +337,6 @@ class ParkinsonSim(Model):
         if perc_dead_neurons >= 99.0 and self.t_0 == None:
             self.t_0 = self.t
         
-        if self.t_70 != None and self.t_30 != None and self.year_per_step == None:
-            delta_step = self.t_30 - self.t_70
-            self.year_per_step = 10/delta_step
-        
-        if self.year_per_step is not None:
-            self.time_years = [i * self.year_per_step for i in self.time]
-
 
         self.neuron_death.append(perc_dead_neurons)
 
