@@ -1,3 +1,5 @@
+#here we add the interventions against the disease
+
 
 # Main
 
@@ -15,7 +17,6 @@ class ParkinsonSim(Model):
         self.neuron_death = []
         self.time = []
         self.time_years =  []
-        self.year_per_step = None
         self.t_70 = None
         self.t_30 =None
         self.t_0 = None
@@ -50,6 +51,12 @@ class ParkinsonSim(Model):
         self.make_param('ventral_base_multiplier', 1)
         self.make_param('ventral_ratio_multiplication', 6)
         self.make_param('dead_neighbour_multiplier', 0.03)
+
+        #now we add the parameters for the treatment:
+        self.make_param('treatment_aplha_syn', 1)
+
+        #now lets add the year per step parameter, that we calculated earlier
+        self.make_param('year_per_steap',1)
         
 
     def reset(self):
@@ -66,7 +73,6 @@ class ParkinsonSim(Model):
         self.time = []
         self.neuron_death = []
         self.time_years = []
-        self.year_per_step = None
         self.t_70 = None
         self.t_30 = None
         self.t_0 = None
@@ -286,21 +292,6 @@ class ParkinsonSim(Model):
         if current_value != 0 and current_value != 6:
             if current_value == 1:
                     p_degeneration = self.degeneration_p_stage1*local_sensitivity * dead_neighbours_multiplier
-<<<<<<< HEAD
-                    p_degeneration_scaled = 1 - np.exp(-p_degeneration)
-            elif current_value == 2:
-                    p_degeneration = self.degeneration_p_stage2*local_sensitivity * dead_neighbours_multiplier
-                    p_degeneration_scaled = 1 - np.exp(-p_degeneration)
-            elif current_value == 3:
-                    p_degeneration = self.degeneration_p_stage3*local_sensitivity * dead_neighbours_multiplier 
-                    p_degeneration_scaled = 1 - np.exp(-p_degeneration)
-            elif current_value == 4:
-                    p_degeneration = self.degeneration_p_stage4*local_sensitivity * dead_neighbours_multiplier
-                    p_degeneration_scaled = 1 - np.exp(-p_degeneration)
-            elif current_value == 5:
-                    p_degeneration = self.degeneration_p_stage5*local_sensitivity * dead_neighbours_multiplier
-                    p_degeneration_scaled = 1 - np.exp(-p_degeneration)
-=======
                     p_degeneration_scaled = 1 - np.exp(-p_degeneration) * self.treatment_aplha_syn
             elif current_value == 2:
                     p_degeneration = self.degeneration_p_stage2*local_sensitivity * dead_neighbours_multiplier
@@ -314,7 +305,6 @@ class ParkinsonSim(Model):
             elif current_value == 5:
                     p_degeneration = self.degeneration_p_stage5*local_sensitivity * dead_neighbours_multiplier 
                     p_degeneration_scaled = 1 - np.exp(-p_degeneration) * self.treatment_aplha_syn
->>>>>>> a4eef269e20a900fec6ed110d6b2594954012a2d
 
             if np.random.random() < p_degeneration_scaled:
                     new_value = current_value + 1
@@ -347,13 +337,6 @@ class ParkinsonSim(Model):
         if perc_dead_neurons >= 99.0 and self.t_0 == None:
             self.t_0 = self.t
         
-        if self.t_70 != None and self.t_30 != None and self.year_per_step == None:
-            delta_step = self.t_30 - self.t_70
-            self.year_per_step = 10/delta_step
-        
-        if self.year_per_step is not None:
-            self.time_years = [i * self.year_per_step for i in self.time]
-
 
         self.neuron_death.append(perc_dead_neurons)
 
@@ -380,5 +363,4 @@ if __name__ == '__main__':
     sim = ParkinsonSim()
     cx = GUI(sim)
     cx.start()
-
 
