@@ -230,7 +230,7 @@ class ParkinsonSim_intervention(Model):
         local_sensitivity = self.sensitivity_matrix[y,x]
 
         #Now lets add the intervention step at t_70
-        if t_70 != None:
+        if self.t_70 != None:
             treatment = self.treatment_alpha_syn
         else:
             treatment = 1
