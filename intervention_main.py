@@ -322,6 +322,8 @@ class ParkinsonSim_intervention(Model):
         """
         self.t += 1
         self.time.append(self.t)
+        if self.year_per_step is not None:
+            self.time_years.append(self.t * self.year_per_step)
         new_config = np.copy(self.config)
 
         mask = (self.config != -1)
