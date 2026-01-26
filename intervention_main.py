@@ -56,7 +56,7 @@ class ParkinsonSim_intervention(Model):
         self.make_param('treatment_aplha_syn', 1)
 
         #now lets add the year per step parameter, that we calculated earlier
-        self.make_param('year_per_steap',1)
+        self.make_param('year_per_step',1)
         
 
     def reset(self):
