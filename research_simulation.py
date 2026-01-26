@@ -4,7 +4,7 @@ import numpy as np
 from scipy.interpolate import interp1d
 
 
-number_runs = 5
+number_runs = 2
 
 neurons_alive_total = []
 years_total = []
@@ -48,9 +48,9 @@ CI = [mean_neurons_alive - (1.96 * (std_neurons_alive/np.sqrt(number_runs))), me
 
 index_70 = np.where(mean_neurons_alive <= 70)[0][0]
 
-plt.plot(common_time, mean_neurons_alive, label = 'mean')
-plt.fill_between(common_time, CI[0], CI[1], alpha = 0.3, label = '95% CI')
-plt.axvline(x = common_time[index_70], color='red', linestyle='--', label='70% neurons alive')
+plt.plot(common_time-common_time[index_70], mean_neurons_alive, label = 'mean')
+plt.fill_between(np.array(common_time)-common_time[index_70], CI[0], CI[1], alpha = 0.3, label = '95% CI')
+plt.axvline(x = common_time[index_70]-common_time[index_70], color='red', linestyle='--', label='70% neurons alive')
 plt.xlabel('years')
 plt.ylabel('% neurons alive')
 plt.legend()
