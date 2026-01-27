@@ -58,6 +58,7 @@ def random_search(iterations, n_runs_per_set):
         }
         
         sim_RMSE = []
+
         for run in range(n_runs_per_set):
             sim = ParkinsonSim(visualize=False)
             sim.reset()

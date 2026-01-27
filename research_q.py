@@ -131,61 +131,62 @@ def sim_parkinsons_intervention(number_runs, params):
 
 
 
-def plot_neuron_degen_over_time(common_time, mean_neurons_alive, CI, index_70, title):
+def plot_neuron_degen_over_time(common_time, mean_neurons_alive, CI, index_70, title, runs):
     plt.plot(common_time-common_time[index_70], mean_neurons_alive, label = 'mean')
-    plt.fill_between(np.array(common_time)-common_time[index_70], CI[0], CI[1], alpha = 0.3, label = '95% CI')
+    plt.fill_between(np.array(common_time)-common_time[index_70], CI[0], CI[1], alpha = 0.3, color = 'red', label = '95% CI')
     plt.axvline(x = common_time[index_70]-common_time[index_70], color='red', linestyle='--', label='70% neurons alive')
     plt.xlabel('years')
     plt.ylabel('% neurons alive')
     plt.legend()
-    plt.title(title)
+    plt.title(f'{title}, number of runs:{runs}')
     plt.show() 
     
 
 if __name__ == "__main__":
-    runs = 2
+    runs = 5
 
     params_no_intervention = {
-        'infection_p_stage1': 0.03,
-        'infection_p_stage2': 0.06,
-        'infection_p_stage3': 0.12,
-        'infection_p_stage4': 0.24,
-        'infection_p_stage5': 0.48,
-        'degeneration_p_stage1': 0.03,
-        'degeneration_p_stage2': 0.06,
-        'degeneration_p_stage3': 0.12,
-        'degeneration_p_stage4': 0.24,
-        'degeneration_p_stage5': 0.48,
+        'infection_p_stage1': 0.05,
+        'infection_p_stage2': 0.10,
+        'infection_p_stage3': 0.20,
+        'infection_p_stage4': 0.30,
+        'infection_p_stage5': 0.40,
+        'degeneration_p_stage1': 0.02,
+        'degeneration_p_stage2': 0.05,
+        'degeneration_p_stage3': 0.10,
+        'degeneration_p_stage4': 0.15,
+        'degeneration_p_stage5': 0.25,
         'p_spontaneous_degeneration': 0,
         'lateral_base_multiplier': 1,
-        'lateral_ratio_multiplication': 3,
+        'lateral_ratio_multiplication': 0.3,
         'ventral_base_multiplier': 1,
-        'ventral_ratio_multiplication': 6,
+        'ventral_ratio_multiplication': 0.7,
         'dead_neighbour_multiplier': 0.03
     }
     common_time_no_int, mean_neurons_alive_no_int, CI_no_int, index_70_no_int, mean_year_per_step_no_int = sim_parkinsons_no_intervention(runs, params_no_intervention)
-    
+    plot_neuron_degen_over_time(common_time_no_int, mean_neurons_alive_no_int, CI_no_int, index_70_no_int, 'No Intervention', runs)
+
     difference_years_70_30_list = []
     CI_difference_years = []
-    treatment_list = np.linspace(0.1,1, 5)
+    treatment_list = np.linspace(0.1,1, 10)
     for i in range(len(treatment_list)):
         params_intervention = {
-            'infection_p_stage1': 0.03,
-            'infection_p_stage2': 0.06,
-            'infection_p_stage3': 0.12,
-            'infection_p_stage4': 0.24,
-            'infection_p_stage5': 0.48,
-            'degeneration_p_stage1': 0.03,
-            'degeneration_p_stage2': 0.06,
-            'degeneration_p_stage3': 0.12,
-            'degeneration_p_stage4': 0.24,
-            'degeneration_p_stage5': 0.48,
+            'infection_p_stage1': 0.05,
+            'infection_p_stage2': 0.10,
+            'infection_p_stage3': 0.20,
+            'infection_p_stage4': 0.30,
+            'infection_p_stage5': 0.40,
+            'degeneration_p_stage1': 0.02,
+            'degeneration_p_stage2': 0.05,
+            'degeneration_p_stage3': 0.10,
+            'degeneration_p_stage4': 0.15,
+            'degeneration_p_stage5': 0.25,
             'p_spontaneous_degeneration': 0,
             'lateral_base_multiplier': 1,
-            'lateral_ratio_multiplication': 3,
+            'lateral_ratio_multiplication': 1.3,
             'ventral_base_multiplier': 1,
-            'ventral_ratio_multiplication': 6,
-            'dead_neighbour_multiplier': 0.03,
+            'ventral_ratio_multiplication': 1.7,
+            'dead_neighbour_multiplier': 0,
             'treatment_alpha_syn': treatment_list[i],
             'year_per_step': mean_year_per_step_no_int
             }

@@ -121,10 +121,10 @@ class ParkinsonSim_intervention(Model):
                     ratio_x = x/self.width
                     y_min,y_max = self.sn_bounds[x]
                     relative_y = (y-y_min)/(y_max-y_min)
-                    x_multiplier = self.lateral_base_multiplier + (ratio_x**2 * self.lateral_ratio_multiplication)
-                    y_multiplier = self.ventral_base_multiplier + ((1 - relative_y)**2 * self.ventral_ratio_multiplication)
-                    self.sensitivity_matrix[y,x] = x_multiplier * y_multiplier
-
+                    x_multiplier = self.lateral_base_multiplier + (ratio_x * self.lateral_ratio_multiplication)
+                    y_multiplier = self.ventral_base_multiplier + ((1 - relative_y) * self.ventral_ratio_multiplication)
+                    self.sensitivity_matrix[y,x] = (x_multiplier * y_multiplier)**2
+                    
         found = False
         for x in range(self.width - 1, 0, -1):
             for y in range(self.height):

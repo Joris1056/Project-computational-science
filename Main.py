@@ -30,26 +30,26 @@ class ParkinsonSim(Model):
         self.make_param('k', 7)  
 
         #the probability of infection per stage
-        self.make_param('infection_p_stage1', 0.03)
-        self.make_param('infection_p_stage2', 0.06)
-        self.make_param('infection_p_stage3', 0.12)
-        self.make_param('infection_p_stage4', 0.24)
-        self.make_param('infection_p_stage5', 0.48)
+        self.make_param('infection_p_stage1', 0.05)
+        self.make_param('infection_p_stage2', 0.10)
+        self.make_param('infection_p_stage3', 0.20)
+        self.make_param('infection_p_stage4', 0.30)
+        self.make_param('infection_p_stage5', 0.40)
 
         #the probability of degeneration per stage
-        self.make_param('degeneration_p_stage1', 0.03)
-        self.make_param('degeneration_p_stage2', 0.06)
-        self.make_param('degeneration_p_stage3', 0.12)
-        self.make_param('degeneration_p_stage4', 0.24)
-        self.make_param('degeneration_p_stage5', 0.48)
+        self.make_param('degeneration_p_stage1', 0.02)
+        self.make_param('degeneration_p_stage2', 0.05)
+        self.make_param('degeneration_p_stage3', 0.10)
+        self.make_param('degeneration_p_stage4', 0.15)
+        self.make_param('degeneration_p_stage5', 0.25)
 
         #maybe if there is spontaneous degeneration then we have p spon deg.
         self.make_param('p_spontaneous_degeneration', 0)
         self.make_param('lateral_base_multiplier', 1)
-        self.make_param('lateral_ratio_multiplication', 3)
+        self.make_param('lateral_ratio_multiplication', 0.3)
         self.make_param('ventral_base_multiplier', 1)
-        self.make_param('ventral_ratio_multiplication', 6)
-        self.make_param('dead_neighbour_multiplier', 0.03)
+        self.make_param('ventral_ratio_multiplication', 0.7)
+        self.make_param('dead_neighbour_multiplier', 0)
         
 
     def reset(self):
@@ -104,9 +104,10 @@ class ParkinsonSim(Model):
                     ratio_x = x/self.width
                     y_min,y_max = self.sn_bounds[x]
                     relative_y = (y-y_min)/(y_max-y_min)
-                    x_multiplier = self.lateral_base_multiplier + (ratio_x**2 * self.lateral_ratio_multiplication)
-                    y_multiplier = self.ventral_base_multiplier + ((1 - relative_y)**2 * self.ventral_ratio_multiplication)
-                    self.sensitivity_matrix[y,x] = x_multiplier * y_multiplier
+                    x_multiplier = self.lateral_base_multiplier + (ratio_x * self.lateral_ratio_multiplication)
+                    y_multiplier = self.ventral_base_multiplier + ((1 - relative_y)* self.ventral_ratio_multiplication)
+                    self.sensitivity_matrix[y,x] = (x_multiplier * y_multiplier)**2
+                    
 
         found = False
         for x in range(self.width - 1, 0, -1):
