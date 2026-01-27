@@ -116,10 +116,12 @@ def plot_neuron_degen_over_time(common_time, mean_neurons_alive, CI, index_70, t
     plt.ylabel('% neurons alive')
     plt.legend()
     plt.title(title)
-    plt.show(block = False)
+    plt.show()
     
 
 if __name__ == "__main__":
+    runs = 5
+
     params_no_intervention = {
         'infection_p_stage1': 0.03,
         'infection_p_stage2': 0.06,
@@ -138,7 +140,7 @@ if __name__ == "__main__":
         'ventral_ratio_multiplication': 6,
         'dead_neighbour_multiplier': 0.03
     }
-    common_time_no_int, mean_neurons_alive_no_int, CI_no_int, index_70_no_int, mean_year_per_step_no_int = sim_parkinsons_no_intervention(2, params_no_intervention)
+    common_time_no_int, mean_neurons_alive_no_int, CI_no_int, index_70_no_int, mean_year_per_step_no_int = sim_parkinsons_no_intervention(runs, params_no_intervention)
     plt.figure()
     plot_neuron_degen_over_time(common_time_no_int, mean_neurons_alive_no_int, CI_no_int, index_70_no_int, 'No Intervention Simulation')
 
@@ -160,10 +162,10 @@ if __name__ == "__main__":
         'ventral_base_multiplier': 1,
         'ventral_ratio_multiplication': 6,
         'dead_neighbour_multiplier': 0.03,
-        'treatment_alpha_syn': 0.5,
+        'treatment_alpha_syn': 0.7,
         'year_per_step': mean_year_per_step_no_int
         }
-    common_time_int_70, mean_neurons_alive_int_70, CI_int_70, index_70_int_70 = sim_parkinsons_intervention(2, params_intervention)
+    common_time_int_70, mean_neurons_alive_int_70, CI_int_70, index_70_int_70 = sim_parkinsons_intervention(runs, params_intervention)
     plt.figure()
     plot_neuron_degen_over_time(common_time_int_70, mean_neurons_alive_int_70, CI_int_70, index_70_int_70, 'Intervention Simulation (treatment at 70% neurons alive)')
 
