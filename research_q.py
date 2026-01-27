@@ -149,9 +149,8 @@ if __name__ == "__main__":
     plot_neuron_degen_over_time(common_time_no_int, mean_neurons_alive_no_int, CI_no_int, index_70_no_int, 'No Intervention Simulation')
 
     difference_years_70_30_list = []
-    treatment_list = []
-    for treatment in range(0.1, 1, 0.05):
-        treatment_list.append(treatment)
+    treatment_list = np.linspace(0.1,1, 10)
+    for i in range(len(treatment_list)):
         params_intervention = {
             'infection_p_stage1': 0.03,
             'infection_p_stage2': 0.06,
@@ -169,7 +168,7 @@ if __name__ == "__main__":
             'ventral_base_multiplier': 1,
             'ventral_ratio_multiplication': 6,
             'dead_neighbour_multiplier': 0.03,
-            'treatment_alpha_syn': treatment,
+            'treatment_alpha_syn': treatment_list[i],
             'year_per_step': mean_year_per_step_no_int
             }
         
