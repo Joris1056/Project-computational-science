@@ -20,7 +20,7 @@ def sim_parkinsons_no_intervention(number_runs, params):
         done = False
         while not done:
             done = sim.step()
-            if sim.t >= 1000:
+            if sim.t >= 2000:
                 break
         neuron_alive = [100- p for p in sim.neuron_death]
         year_step_runs.append(sim.year_per_step)
@@ -72,7 +72,7 @@ def sim_parkinsons_intervention(number_runs, params):
         done = False
         while not done:
             done = sim.step()
-            if sim.t >= 1000:
+            if sim.t >= 2000:
                 break
         neuron_alive = [100- p for p in sim.neuron_death]
 
@@ -101,14 +101,33 @@ def sim_parkinsons_intervention(number_runs, params):
     mean_neurons_alive = np.nanmean(neurons_interp, axis=0)
     std_neurons_alive = np.nanstd(neurons_interp, axis=0)
     CI = [mean_neurons_alive - (1.96 * (std_neurons_alive/np.sqrt(number_runs))), mean_neurons_alive + (1.96 * (std_neurons_alive/np.sqrt(number_runs)))]
-
+         
+    idx_30_arr = np.where(mean_neurons_alive <= 30)[0]
+    if idx_30_arr.size == 0:
+        return 0, [0, 0] # Of een andere 'fail' waarde
+    
+    index_30 = idx_30_arr[0]
     index_70 = np.where(mean_neurons_alive <= 70)[0][0]
-    index_30 = np.where(mean_neurons_alive <= 30)[0][0]
-    year_70 = common_time[index_70]
-    year_30 = common_time[index_30]
-    difference_years = year_30 - year_70
+    mean_diff = common_time[index_30] - common_time[index_70]
 
-    return difference_years
+    # Bereken CI per individuele run
+    diff_runs = []
+    for run in neurons_interp: # Gebruik de geïnterpoleerde data voor gelijke tijdstappen
+        i70 = np.where(run <= 70)[0]
+        i30 = np.where(run <= 30)[0]
+        
+        if i70.size > 0 and i30.size > 0:
+            diff_runs.append(common_time[i30[0]] - common_time[i70[0]])
+    
+    if len(diff_runs) > 0:
+        std_val = np.std(diff_runs)
+        mean_val = np.mean(diff_runs)
+        err = 1.96 * (std_val / np.sqrt(len(diff_runs)))
+        ci = [mean_val - err, mean_val + err]
+    else:
+        ci = [0, 0]
+
+    return mean_diff, ci
 
 
 
@@ -124,7 +143,7 @@ def plot_neuron_degen_over_time(common_time, mean_neurons_alive, CI, index_70, t
     
 
 if __name__ == "__main__":
-    runs = 5
+    runs = 2
 
     params_no_intervention = {
         'infection_p_stage1': 0.03,
@@ -145,11 +164,10 @@ if __name__ == "__main__":
         'dead_neighbour_multiplier': 0.03
     }
     common_time_no_int, mean_neurons_alive_no_int, CI_no_int, index_70_no_int, mean_year_per_step_no_int = sim_parkinsons_no_intervention(runs, params_no_intervention)
-    plt.figure()
-    plot_neuron_degen_over_time(common_time_no_int, mean_neurons_alive_no_int, CI_no_int, index_70_no_int, 'No Intervention Simulation')
-
+    
     difference_years_70_30_list = []
-    treatment_list = np.linspace(0.1,1, 10)
+    CI_difference_years = []
+    treatment_list = np.linspace(0.1,1, 5)
     for i in range(len(treatment_list)):
         params_intervention = {
             'infection_p_stage1': 0.03,
@@ -172,8 +190,13 @@ if __name__ == "__main__":
             'year_per_step': mean_year_per_step_no_int
             }
         
-        difference_years_70_30 = sim_parkinsons_intervention(runs, params_intervention)
-        difference_years_70_30_list.append((treatment, difference_years_70_30))
+        difference_years_70_30, CI_difference = sim_parkinsons_intervention(runs, params_intervention)
+        difference_years_70_30_list.append(difference_years_70_30)
+        CI_difference_years.append(CI_difference)
     
+    CI_lower = [ci[0] for ci in CI_difference_years]
+    CI_upper = [ci[1] for ci in CI_difference_years]
     plt.figure()
-    plt.plot(difference_years_70_30_list,treatment_list)
+    plt.plot(treatment_list,difference_years_70_30_list)
+    plt.fill_between(treatment_list, CI_lower, CI_upper, alpha = 0.3,color = 'red', label = '95% CI')
+    plt.show()
