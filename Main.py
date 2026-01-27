@@ -70,14 +70,6 @@ class ParkinsonSim(Model):
         self.t_70 = None
         self.t_30 = None
         self.t_0 = None
-        
-        # old way:
-        # 2. Initialize your grid here (e.g., all zeros for healthy)
-        # You could also 'infect' one cell in the center to start the process
-        #self.config = np.zeros((self.height,self.width))
-        #middle_x = self.width//2
-        #middle_y = self.height//2
-        #self.config[middle_y,middle_x] = 1
 
 
         self.config = np.full((self.height, self.width), -1.0)
