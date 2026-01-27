@@ -116,7 +116,7 @@ def plot_neuron_degen_over_time(common_time, mean_neurons_alive, CI, index_70, t
     plt.ylabel('% neurons alive')
     plt.legend()
     plt.title(title)
-    plt.show(block = False)
+    plt.show()
     
 
 if __name__ == "__main__":
