@@ -118,7 +118,7 @@ def plot_neuron_degen_over_time(common_time, mean_neurons_alive, CI, index_70, t
     
 
 if __name__ == "__main__":
-    runs = 1
+    runs = 10
 
     params_no_intervention = {
         'infection_p_stage1': 0.05,
@@ -143,7 +143,7 @@ if __name__ == "__main__":
 
     difference_years_70_30_list = []
     CI_difference_years = []
-    treatment_list = np.linspace(0.1,1, 4)
+    treatment_list = np.linspace(0.1,1, 10)
     for i in range(len(treatment_list)):
         params_intervention = {
             'infection_p_stage1': 0.05,
@@ -185,7 +185,7 @@ if __name__ == "__main__":
     plt.figure()
     plt.plot(x_coords, y_coords)
     plt.fill_between(x_coords, ci_low, ci_high, alpha = 0.3,color = 'red', label = '95% CI')
-    plt.xlabel('strength of intervention')
+    plt.xlabel('strength of intervention (%)')
     plt.ylabel('difference 70% and 30% neurons alive (years)')
     plt.title(f'Effect intervention on years between 70% and 30% neurons alive runs: {runs}')
     plt.show()
