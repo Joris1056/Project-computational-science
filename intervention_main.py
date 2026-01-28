@@ -1,186 +1,373 @@
-from Main import ParkinsonSim
-import matplotlib.pyplot as plt
+#here we add the interventions against the disease
+
+
+# Main
+
 import numpy as np
-from scipy.interpolate import interp1d
-from intervention_main import ParkinsonSim_intervention
+from pyics import Model
 
+class ParkinsonSim_intervention(Model):
+    def __init__(self, visualize = True):
+        Model.__init__(self)
+        self.visualize = visualize
 
+        self.t = 0
+        self.config = None
+        self.sensitivity_matrix = None
+        self.neuron_death = []
+        self.time = []
+        self.time_years =  []
+        self.t_70 = None
+        self.t_30 =None
+        self.t_0 = None
 
-def sim_parkinsons_no_intervention(number_runs, params):
-    neurons_alive_total = []
-    years_total = []
-    year_step_runs = []
-    for run in range(number_runs):
-        print(run)
-        sim = ParkinsonSim(visualize=False)
-        sim.reset()
-        for name, value in params.items():
-                setattr(sim,name,value)
+        #Here we are defining all the parameters
 
-        done = False
-        while not done:
-            done = sim.step()
-            if sim.t >= 2000:
-                break
-        neuron_alive = [100- p for p in sim.neuron_death]
-        year_step_runs.append(sim.year_per_step)
+        #size of the figure
+        self.make_param('width', 150)
+        self.make_param('height', 150)
 
-        neurons_alive_total.append(neuron_alive)
-        years_total.append(sim.time_years)
-    
-    # mean year/step for intervention simulations
-    mean_year_per_step = np.mean(year_step_runs)
+        #amount of states
+        self.make_param('k', 7)  
 
-    t_min = 0
-    t_max = min(max(y) for y in years_total)
-    n_points = 200
+        #the probability of infection per stage
+        self.make_param('infection_p_stage1', 0.05)
+        self.make_param('infection_p_stage2', 0.10)
+        self.make_param('infection_p_stage3', 0.20)
+        self.make_param('infection_p_stage4', 0.30)
+        self.make_param('infection_p_stage5', 0.40)
 
-    common_time = np.linspace(t_min, t_max, n_points)
+        #the probability of degeneration per stage
+        self.make_param('degeneration_p_stage1', 0.02)
+        self.make_param('degeneration_p_stage2', 0.05)
+        self.make_param('degeneration_p_stage3', 0.10)
+        self.make_param('degeneration_p_stage4', 0.15)
+        self.make_param('degeneration_p_stage5', 0.25)
+        #maybe if there is spontaneous degeneration then we have p spon deg.
+        self.make_param('p_spontaneous_degeneration', 0)
+        self.make_param('lateral_base_multiplier', 1)
+        self.make_param('lateral_ratio_multiplication', 0.3)
+        self.make_param('ventral_base_multiplier', 1)
+        self.make_param('ventral_ratio_multiplication', 0.7)
+        self.make_param('dead_neighbour_multiplier', 0)
 
-    neurons_interp = []
-    for years, neurons in zip(years_total,neurons_alive_total):
-        f = interp1d(
-            years,
-            neurons,
-            kind='linear',
-            bounds_error=False,
-            fill_value=np.nan
-        )
-        neurons_interp.append(f(common_time))
+        #now we add the parameters for the treatment:
+        self.make_param('treatment_alpha_syn', 1)
 
-    neurons_interp = np.array(neurons_interp)
-
-    mean_neurons_alive = np.nanmean(neurons_interp, axis=0)
-    std_neurons_alive = np.nanstd(neurons_interp, axis=0)
-    CI = [mean_neurons_alive - (1.96 * (std_neurons_alive/np.sqrt(number_runs))), mean_neurons_alive + (1.96 * (std_neurons_alive/np.sqrt(number_runs)))]
-
-    index_70 = np.where(mean_neurons_alive <= 70)[0][0]
-
-    return common_time, mean_neurons_alive, CI, index_70, mean_year_per_step
-
-
-def sim_parkinsons_intervention(number_runs, params):
-    neurons_alive_total = []
-    years_total = []
-    for run in range(number_runs):
-        print(run)
-        sim = ParkinsonSim_intervention(visualize=False)
-        sim.reset()
-        for name, value in params.items():
-                setattr(sim,name,value)
-
-        done = False
-        while not done:
-            done = sim.step()
-            if sim.t >= 2000:
-                break
-        neuron_alive = [100- p for p in sim.neuron_death]
-
-        neurons_alive_total.append(neuron_alive)
-        years_total.append(sim.time_years)
-
-    diff_runs = []
-    for years, neurons in zip(years_total, neurons_alive_total):
-        years = np.array(years)
-        neurons = np.array(neurons)
-
-        idx70 = np.where(neurons <= 70)[0]
-        idx30 = np.where(neurons <= 30)[0]
-
-        if idx70.size > 0 and idx30.size > 0:
-            diff_runs.append(years[idx30[0]] - years[idx70[0]])
-    
-    diff_runs = np.array(diff_runs)
-    mean_diff_runs = np.mean(diff_runs)
-    std = np.std(diff_runs)
-    ci = [
-        mean_diff_runs - 1.96 * std / np.sqrt(len(diff_runs)),
-        mean_diff_runs + 1.96 * std / np.sqrt(len(diff_runs))
-    ]
-
-    return mean_diff_runs, ci
-
-
-def plot_neuron_degen_over_time(common_time, mean_neurons_alive, CI, index_70, title, runs):
-    plt.plot(common_time-common_time[index_70], mean_neurons_alive, label = 'mean')
-    plt.fill_between(np.array(common_time)-common_time[index_70], CI[0], CI[1], alpha = 0.3, color = 'red', label = '95% CI')
-    plt.axvline(x = common_time[index_70]-common_time[index_70], color='red', linestyle='--', label='70% neurons alive')
-    plt.xlabel('years')
-    plt.ylabel('% neurons alive')
-    plt.legend()
-    plt.title(f'{title}, number of runs: {runs}')
-    plt.show() 
-    
-
-if __name__ == "__main__":
-    runs = 2
-
-    params_no_intervention = {
-        'infection_p_stage1': 0.05,
-        'infection_p_stage2': 0.10,
-        'infection_p_stage3': 0.20,
-        'infection_p_stage4': 0.30,
-        'infection_p_stage5': 0.40,
-        'degeneration_p_stage1': 0.02,
-        'degeneration_p_stage2': 0.05,
-        'degeneration_p_stage3': 0.10,
-        'degeneration_p_stage4': 0.15,
-        'degeneration_p_stage5': 0.25,
-        'p_spontaneous_degeneration': 0,
-        'lateral_base_multiplier': 1,
-        'lateral_ratio_multiplication': 0.3,
-        'ventral_base_multiplier': 1,
-        'ventral_ratio_multiplication': 0.7,
-        'dead_neighbour_multiplier': 0,
-    }
-    common_time_no_int, mean_neurons_alive_no_int, CI_no_int, index_70_no_int, mean_year_per_step_no_int = sim_parkinsons_no_intervention(runs, params_no_intervention)
-    plot_neuron_degen_over_time(common_time_no_int, mean_neurons_alive_no_int, CI_no_int, index_70_no_int, 'No Intervention', runs)
-
-    difference_years_70_30_list = []
-    CI_difference_years = []
-    treatment_list = np.linspace(0.1,1, 4)
-    for i in range(len(treatment_list)):
-        params_intervention = {
-            'infection_p_stage1': 0.05,
-            'infection_p_stage2': 0.10,
-            'infection_p_stage3': 0.20,
-            'infection_p_stage4': 0.30,
-            'infection_p_stage5': 0.40,
-            'degeneration_p_stage1': 0.02,
-            'degeneration_p_stage2': 0.05,
-            'degeneration_p_stage3': 0.10,
-            'degeneration_p_stage4': 0.15,
-            'degeneration_p_stage5': 0.25,
-            'p_spontaneous_degeneration': 0,
-            'lateral_base_multiplier': 1,
-            'lateral_ratio_multiplication': 1.3,
-            'ventral_base_multiplier': 1,
-            'ventral_ratio_multiplication': 1.7,
-            'dead_neighbour_multiplier': 0,
-            'treatment_alpha_syn': treatment_list[i],
-            'year_per_step': mean_year_per_step_no_int
-            }
+        #now lets add the year per step parameter, that we calculated earlier
+        self.make_param('year_per_step',0.07194244604316546)
         
-        difference_years_70_30, CI_difference = sim_parkinsons_intervention(runs, params_intervention)
-        difference_years_70_30_list.append(difference_years_70_30)
-        CI_difference_years.append(CI_difference)
+
+    def reset(self):
+        """Initializes or resets the simulation state."""
+        if self.visualize:
+            import matplotlib.pyplot as plt
+            self.fig_neuron_alive, self.ax_neuron_alive = plt.subplots()
+            self.line_neuron_alive, = self.ax_neuron_alive.plot([], [])
+            self.ax_neuron_alive.set_ylabel('% live Neurons')
+            self.ax_neuron_alive.set_title('Neurons alive Over Time')
+            self.ax_neuron_alive.legend()
+
+        self.t = 0
+        self.time = []
+        self.neuron_death = []
+        self.time_years = []
+        self.t_70 = None
+        self.t_30 = None
+        self.t_0 = None
+        self.t_70_years = None
+        self.t_30_years = None  
+        self.t_0_years = None   
+        
+        # old way:
+        # 2. Initialize your grid here (e.g., all zeros for healthy)
+        # You could also 'infect' one cell in the center to start the process
+        #self.config = np.zeros((self.height,self.width))
+        #middle_x = self.width//2
+        #middle_y = self.height//2
+        #self.config[middle_y,middle_x] = 1
+
+
+        self.config = np.full((self.height, self.width), -1.0)
+        
+        center_x = self.width * 0.35
+        for y in range(self.height):
+            for x in range(self.width):
+                nx = x / self.width
+                curve = (self.height * 0.2) + ((x - center_x)**2 / (self.width * 0.8)) - (x * 0.15)
+                min_width = self.height * 0.1
+                max_width = self.height * 0.25
+                width = min_width + (nx * (max_width - min_width))
+                
+                if y > curve and y < curve + width:
+                    self.config[y, x] = 0
+        
+        self.sn_bounds = {}
+
+        for x in range(self.width):
+            ys = np.where(self.config[:,x] != -1)[0]
+            if len(ys) > 0:
+                y_min = ys.min()
+                y_max = ys.max()
+                self.sn_bounds[x] = (y_min,y_max)
+        
+        self.sensitivity_matrix = np.full((self.height, self.width), 0)
+        
+        
+        for y in range(self.height):
+            for x in range(self.width):
+                if self.config[y,x] != -1:
+                    ratio_x = x/self.width
+                    y_min,y_max = self.sn_bounds[x]
+                    relative_y = (y-y_min)/(y_max-y_min)
+                    x_multiplier = self.lateral_base_multiplier + (ratio_x * self.lateral_ratio_multiplication)
+                    y_multiplier = self.ventral_base_multiplier + ((1 - relative_y) * self.ventral_ratio_multiplication)
+                    self.sensitivity_matrix[y,x] = (x_multiplier * y_multiplier)**2
+                    
+        found = False
+        for x in range(self.width - 1, 0, -1):
+            for y in range(self.height):
+                if self.config[y, x] == 0:
+                    self.config[y, x] = 1
+                    neighbours = self.get_neighbours(y,x)
+                    for x,y in neighbours:
+                        self.config[y,x] = 1
+                    found = True
+                    break
+            if found:
+                break 
     
-    CI_lower = [ci[0] for ci in CI_difference_years]
-    CI_upper = [ci[1] for ci in CI_difference_years]
 
 
-    reduction_percentages = (1 - np.array(treatment_list)) * 100
+
+    def draw(self):
+        """Handles the visualization of the grid."""
+        if not self.visualize:
+            return 
+        import matplotlib
+        import matplotlib.pyplot as plt
+
+        mask = (self.config != -1)
+        number_neurons = np.sum(mask)
+
+        number_dead_neurons = np.sum(self.config == 6)
+
+        total_neuron = 5.5*10**5
+        neuron_per_cel = total_neuron/number_neurons
+        perc_dead_neurons = round((number_dead_neurons/number_neurons) * 100,2)
+        neuron_representation = f'One cell = {int(neuron_per_cel)} dopaminergic neurons'
+        percentage_dead_neurons = f'{perc_dead_neurons}% neurons dead'        
+        plt.cla()
+        # 3. Use plt.imshow() to render self.config
+        # Note: Set vmin and vmax to keep the color scale consistent
+        cmap = plt.get_cmap('YlOrRd')
+        cmap.set_under('lightgrey')
+        plt.imshow(self.config, origin = 'lower', vmin=0, vmax=self.k - 1,
+                cmap=cmap)
+        plt.axis('image')
+        plt.title(f'Substantia Nigra (coronal view) Time step: {self.t}')
+        plt.xlabel('medial --> lateral')
+        plt.ylabel('ventral <--> dorsal')
+        plt.text(0.02, 0.95, neuron_representation, transform=plt.gca().transAxes, 
+                fontsize=9, verticalalignment='top',
+                bbox=dict(boxstyle='round', facecolor='white', alpha=0.7))
+        plt.text(0.02, 0.85, percentage_dead_neurons, transform=plt.gca().transAxes, 
+                fontsize=9, verticalalignment='top',
+                bbox=dict(boxstyle='round', facecolor='white', alpha=0.7))
 
 
-    sort_indices = np.argsort(reduction_percentages)
-    x_coords = reduction_percentages[sort_indices]
-    y_coords = np.array(difference_years_70_30_list)[sort_indices]
-    ci_low = np.array(CI_lower)[sort_indices]
-    ci_high = np.array(CI_upper)[sort_indices]
-    plt.figure()
-    plt.plot(x_coords, y_coords)
-    plt.fill_between(x_coords, ci_low, ci_high, alpha = 0.3,color = 'red', label = '95% CI')
-    plt.xlabel('strength of intervention')
-    plt.ylabel('difference 70% and 30% neurons alive (years)')
-    plt.title(f'Effect intervention on years between 70% and 30% neurons alive runs: {runs}')
-    plt.show()
+        if self.t_70 is not None:
+            self.line_neuron_alive.set_data(np.array(self.time_years) - self.t_70_years, 100 - np.array(self.neuron_death))
+        else:
+            self.line_neuron_alive.set_data(self.time_years, 100 - np.array(self.neuron_death))
+        
+        for line in self.ax_neuron_alive.lines[1:]:
+            line.remove()
+        
+        if self.t_70_years != None:
+            self.ax_neuron_alive.axvline(x = self.t_70_years-self.t_70_years, color = 'black', linestyle = '--', label = f'{round(self.t_70_years-self.t_70_years,2)}th year, 70% left')
+
+        if self.t_30_years != None:
+            self.ax_neuron_alive.axvline(x = self.t_30_years-self.t_70_years, color = 'green', linestyle = '--',label = f'{round(self.t_30_years-self.t_70_years,2)}th year, 30% left)')
+        
+        if self.t_0_years != None:
+            self.ax_neuron_alive.axvline(x = self.t_0_years-self.t_70_years, linestyle = '--', color = 'black', label = f'{round(self.t_0_years-self.t_70_years,1)}th year, 1% left')
+        
+        if self.year_per_step == None:
+            self.ax_neuron_alive.set_xlabel('Time step')
+        if self.year_per_step != None:
+            self.ax_neuron_alive.set_xlabel('Time in years')
+        self.ax_neuron_alive.relim()
+        self.ax_neuron_alive.autoscale_view()
+        self.ax_neuron_alive.legend()
+        plt.pause(0.01)
+
+
+    def get_neighbours(self, y, x):
+        """
+        Helper function to retrieve the states of the 8 neighbors (Moore neighborhood).
+        """
+        set_neighbours = set()
+        for dx in range(-1, 2):
+            for dy in range(-1,2):
+                tuple_neighbour = ((x+dx)%self.width, (y+dy)%self.height)
+                if not (dx == 0 and dy == 0):
+                    set_neighbours.add(tuple_neighbour)
+    
+        return list(set_neighbours)
+    
+    def calculate_new_cell_value(self, current_value, neighbour_values, y, x):
+        if current_value == -1:
+            return -1
+        
+        local_sensitivity = self.sensitivity_matrix[y,x]
+
+        #Now lets add the intervention step at t_70
+        if self.t_70 != None:
+            treatment = self.treatment_alpha_syn
+        else:
+            treatment = 1
+            
+
+        # dead cell remains dead
+        if current_value == 6:
+            new_value = 6
+            return new_value
+
+        # if current cell is healthy chance of getting starting degeneration
+        elif current_value == 0:
+        
+            sick_neighbours = []
+            for value in neighbour_values:
+                if value >= 1:
+                    sick_neighbours.append(value)
+            
+            p_no_infection_one_cell = []
+            for value in sick_neighbours:
+                if value == 1:
+                    raw_p = self.infection_p_stage1*local_sensitivity
+                    schaled_p = np.exp(-raw_p)
+                    p_no_infection_one_cell.append(schaled_p)
+                elif value == 2:
+                    raw_p = self.infection_p_stage2*local_sensitivity
+                    schaled_p = np.exp(-raw_p)
+                    p_no_infection_one_cell.append(schaled_p)
+                elif value == 3:
+                    raw_p = self.infection_p_stage3*local_sensitivity
+                    schaled_p = np.exp(-raw_p)
+                    p_no_infection_one_cell.append(schaled_p)
+                elif value == 4:
+                    raw_p = self.infection_p_stage4*local_sensitivity
+                    schaled_p = np.exp(-raw_p)
+                    p_no_infection_one_cell.append(schaled_p)
+                elif value == 5:
+                    raw_p = self.infection_p_stage5*local_sensitivity
+                    schaled_p = np.exp(-raw_p)
+                    p_no_infection_one_cell.append(schaled_p)
+            
+            p_no_infection = 1 - (self.p_spontaneous_degeneration * local_sensitivity)
+            for i in range(0,len(p_no_infection_one_cell)):
+                p_no_infection *= p_no_infection_one_cell[i]
+
+            # chance of healthy cell getting infected
+            p_infection = 1 - p_no_infection
+
+            if np.random.random() < p_infection:
+                new_value = 1
+                return new_value
+            else:
+                new_value = 0
+                return new_value
+        
+        # internal progression
+        p_degeneration = 0
+
+        dead_neighbours = 0
+        for value in neighbour_values:
+            if value == 6:
+                dead_neighbours += 1
+        
+        dead_neighbours_multiplier = 1 + self.dead_neighbour_multiplier * dead_neighbours
+
+        if current_value != 0 and current_value != 6:
+            if current_value == 1:
+                    p_degeneration = self.degeneration_p_stage1*local_sensitivity * dead_neighbours_multiplier
+                    p_degeneration_scaled = (1 - np.exp(-p_degeneration)) * treatment
+            elif current_value == 2:
+                    p_degeneration = self.degeneration_p_stage2*local_sensitivity * dead_neighbours_multiplier
+                    p_degeneration_scaled = (1 - np.exp(-p_degeneration)) * treatment
+            elif current_value == 3:
+                    p_degeneration = self.degeneration_p_stage3*local_sensitivity * dead_neighbours_multiplier 
+                    p_degeneration_scaled = (1 - np.exp(-p_degeneration)) * treatment
+            elif current_value == 4:
+                    p_degeneration = self.degeneration_p_stage4*local_sensitivity * dead_neighbours_multiplier 
+                    p_degeneration_scaled = (1 - np.exp(-p_degeneration)) * treatment
+            elif current_value == 5:
+                    p_degeneration = self.degeneration_p_stage5*local_sensitivity * dead_neighbours_multiplier 
+                    p_degeneration_scaled = (1 - np.exp(-p_degeneration)) * treatment
+
+            if np.random.random() < p_degeneration_scaled:
+                    new_value = current_value + 1
+            else:
+                new_value = current_value
+            
+        return new_value
+
+
+
+    def step(self):
+        """
+        Contains the transition rules for one time step.
+        Each step represents a progression in time (e.g., one day or week).
+        """
+        self.t += 1
+        self.time.append(self.t)
+
+        if self.year_per_step is not None:
+            self.time_years.append(self.t * self.year_per_step)
+        new_config = np.copy(self.config)
+
+
+        mask = (self.config != -1)
+        number_neurons = np.sum(mask)
+        number_dead_neurons = np.sum(self.config == 6)
+        perc_dead_neurons = round((number_dead_neurons/number_neurons) * 100,2)
+        perc_alive_neurons = 100 - perc_dead_neurons
+
+        if perc_alive_neurons <= 70.0 and self.t_70 == None:
+            self.t_70 = self.t
+            self.t_70_years = self.t * self.year_per_step
+        if perc_alive_neurons <= 30.0 and self.t_30 == None:
+            self.t_30 = self.t
+            self.t_30_years = self.t * self.year_per_step
+        if perc_dead_neurons >= 99.0 and self.t_0 == None:
+            self.t_0 = self.t
+            self.t_0_years = self.t * self.year_per_step
+
+
+        self.neuron_death.append(perc_dead_neurons)
+
+
+
+        for x in range(self.width):
+            for y in range(self.height):
+                cell_value = self.config[y,x]
+                list_neighbour_value = []
+                for neighbour_x, neighbour_y in self.get_neighbours(y,x):
+                    value = self.config[neighbour_y,neighbour_x]
+                    list_neighbour_value.append(value)
+                new_config[y,x] = self.calculate_new_cell_value(cell_value,list_neighbour_value, y, x)
+        
+        self.config = new_config
+
+        if perc_dead_neurons >= 99.0:
+            return True
+        
+        return False
+
+if __name__ == '__main__':
+    from pyics import GUI
+    sim = ParkinsonSim_intervention()
+    cx = GUI(sim)
+    cx.start()
+
