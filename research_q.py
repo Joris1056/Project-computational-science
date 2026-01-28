@@ -118,7 +118,7 @@ def plot_neuron_degen_over_time(common_time, mean_neurons_alive, CI, index_70, t
     
 
 if __name__ == "__main__":
-    runs = 2
+    runs = 1
 
     params_no_intervention = {
         'infection_p_stage1': 0.05,
@@ -143,7 +143,7 @@ if __name__ == "__main__":
 
     difference_years_70_30_list = []
     CI_difference_years = []
-    treatment_list = np.linspace(0.1,1, 3)
+    treatment_list = np.linspace(0.1,1, 4)
     for i in range(len(treatment_list)):
         params_intervention = {
             'infection_p_stage1': 0.05,
