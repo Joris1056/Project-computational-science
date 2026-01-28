@@ -138,12 +138,12 @@ def plot_neuron_degen_over_time(common_time, mean_neurons_alive, CI, index_70, t
     plt.xlabel('years')
     plt.ylabel('% neurons alive')
     plt.legend()
-    plt.title(f'{title}, number of runs:{runs}')
+    plt.title(f'{title}, number of runs: {runs}')
     plt.show() 
     
 
 if __name__ == "__main__":
-    runs = 5
+    runs = 2
 
     params_no_intervention = {
         'infection_p_stage1': 0.05,
@@ -164,11 +164,11 @@ if __name__ == "__main__":
         'dead_neighbour_multiplier': 0.03
     }
     common_time_no_int, mean_neurons_alive_no_int, CI_no_int, index_70_no_int, mean_year_per_step_no_int = sim_parkinsons_no_intervention(runs, params_no_intervention)
-    plot_neuron_degen_over_time(common_time_no_int, mean_neurons_alive_no_int, CI_no_int, index_70_no_int, 'No Intervention', runs)
+    #plot_neuron_degen_over_time(common_time_no_int, mean_neurons_alive_no_int, CI_no_int, index_70_no_int, 'No Intervention', runs)
 
     difference_years_70_30_list = []
     CI_difference_years = []
-    treatment_list = np.linspace(0.1,1, 10)
+    treatment_list = np.linspace(0.1,1, 4)
     for i in range(len(treatment_list)):
         params_intervention = {
             'infection_p_stage1': 0.05,
@@ -197,7 +197,20 @@ if __name__ == "__main__":
     
     CI_lower = [ci[0] for ci in CI_difference_years]
     CI_upper = [ci[1] for ci in CI_difference_years]
+
+
+    reduction_percentages = (1 - np.array(treatment_list)) * 100
+
+
+    sort_indices = np.argsort(reduction_percentages)
+    x_coords = reduction_percentages[sort_indices]
+    y_coords = np.array(difference_years_70_30_list)[sort_indices]
+    ci_low = np.array(CI_lower)[sort_indices]
+    ci_high = np.array(CI_upper)[sort_indices]
     plt.figure()
-    plt.plot(treatment_list,difference_years_70_30_list)
-    plt.fill_between(treatment_list, CI_lower, CI_upper, alpha = 0.3,color = 'red', label = '95% CI')
+    plt.plot(x_coords, y_coords)
+    plt.fill_between(x_coords, ci_low, ci_high, alpha = 0.3,color = 'red', label = '95% CI')
+    plt.xlabel('strength of intervention')
+    plt.ylabel('difference 70% and 30% neurons alive (years)')
+    plt.title(f'Effect intervention on years between 70% and 30% neurons alive runs: {runs}')
     plt.show()
