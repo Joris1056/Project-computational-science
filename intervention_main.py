@@ -31,32 +31,31 @@ class ParkinsonSim_intervention(Model):
         self.make_param('k', 7)  
 
         #the probability of infection per stage
-        self.make_param('infection_p_stage1', 0.03)
-        self.make_param('infection_p_stage2', 0.06)
-        self.make_param('infection_p_stage3', 0.12)
-        self.make_param('infection_p_stage4', 0.24)
-        self.make_param('infection_p_stage5', 0.48)
+        self.make_param('infection_p_stage1', 0.05)
+        self.make_param('infection_p_stage2', 0.10)
+        self.make_param('infection_p_stage3', 0.20)
+        self.make_param('infection_p_stage4', 0.30)
+        self.make_param('infection_p_stage5', 0.40)
 
         #the probability of degeneration per stage
-        self.make_param('degeneration_p_stage1', 0.03)
-        self.make_param('degeneration_p_stage2', 0.06)
-        self.make_param('degeneration_p_stage3', 0.12)
-        self.make_param('degeneration_p_stage4', 0.24)
-        self.make_param('degeneration_p_stage5', 0.48)
-
+        self.make_param('degeneration_p_stage1', 0.02)
+        self.make_param('degeneration_p_stage2', 0.05)
+        self.make_param('degeneration_p_stage3', 0.10)
+        self.make_param('degeneration_p_stage4', 0.15)
+        self.make_param('degeneration_p_stage5', 0.25)
         #maybe if there is spontaneous degeneration then we have p spon deg.
         self.make_param('p_spontaneous_degeneration', 0)
         self.make_param('lateral_base_multiplier', 1)
-        self.make_param('lateral_ratio_multiplication', 3)
+        self.make_param('lateral_ratio_multiplication', 0.3)
         self.make_param('ventral_base_multiplier', 1)
-        self.make_param('ventral_ratio_multiplication', 6)
-        self.make_param('dead_neighbour_multiplier', 0.03)
+        self.make_param('ventral_ratio_multiplication', 0.7)
+        self.make_param('dead_neighbour_multiplier', 0)
 
         #now we add the parameters for the treatment:
-        self.make_param('treatment_alpha_syn', 0.01)
+        self.make_param('treatment_alpha_syn', 1)
 
         #now lets add the year per step parameter, that we calculated earlier
-        self.make_param('year_per_step',0.103)
+        self.make_param('year_per_step',0.07194244604316546)
         
 
     def reset(self):
