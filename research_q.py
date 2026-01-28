@@ -20,7 +20,7 @@ def sim_parkinsons_no_intervention(number_runs, params):
         done = False
         while not done:
             done = sim.step()
-            if sim.t >= 2000:
+            if sim.t >= 1500:
                 break
         neuron_alive = [100- p for p in sim.neuron_death]
         year_step_runs.append(sim.year_per_step)
@@ -62,43 +62,48 @@ def sim_parkinsons_no_intervention(number_runs, params):
 def sim_parkinsons_intervention(number_runs, params):
     neurons_alive_total = []
     years_total = []
+
     for run in range(number_runs):
-        print(run)
+        print(f"Intervention run {run}")
         sim = ParkinsonSim_intervention(visualize=False)
         sim.reset()
         for name, value in params.items():
-                setattr(sim,name,value)
+            setattr(sim, name, value)
 
         done = False
         while not done:
             done = sim.step()
-            if sim.t >= 2000:
+            if sim.t >= 1500:  
                 break
-        neuron_alive = [100- p for p in sim.neuron_death]
 
+        neuron_alive = [100 - p for p in sim.neuron_death]
         neurons_alive_total.append(neuron_alive)
         years_total.append(sim.time_years)
 
     diff_runs = []
     for years, neurons in zip(years_total, neurons_alive_total):
-        years = np.array(years)
-        neurons = np.array(neurons)
+        neurons_arr = np.array(neurons)
+        years_arr = np.array(years)
 
-        idx70 = np.where(neurons <= 70)[0]
-        idx30 = np.where(neurons <= 30)[0]
+        t_70 = np.interp(70, neurons_arr[::-1], years_arr[::-1])
 
-        if idx70.size > 0 and idx30.size > 0:
-            diff_runs.append(years[idx30[0]] - years[idx70[0]])
-    
+        if np.any(neurons_arr <= 30):
+            t_30 = np.interp(30, neurons_arr[::-1], years_arr[::-1])
+        else:
+            t_30 = years_arr[-1] 
+
+        diff_runs.append(t_30 - t_70)
+
     diff_runs = np.array(diff_runs)
     mean_diff_runs = np.mean(diff_runs)
-    std = np.std(diff_runs)
+    std_diff_runs = np.std(diff_runs)
     ci = [
-        mean_diff_runs - 1.96 * std / np.sqrt(len(diff_runs)),
-        mean_diff_runs + 1.96 * std / np.sqrt(len(diff_runs))
+        mean_diff_runs - 1.96 * std_diff_runs / np.sqrt(number_runs),
+        mean_diff_runs + 1.96 * std_diff_runs / np.sqrt(number_runs)
     ]
 
     return mean_diff_runs, ci
+
 
 
 def plot_neuron_degen_over_time(common_time, mean_neurons_alive, CI, index_70, title, runs):
@@ -138,7 +143,7 @@ if __name__ == "__main__":
 
     difference_years_70_30_list = []
     CI_difference_years = []
-    treatment_list = np.linspace(0.1,1, 4)
+    treatment_list = np.linspace(0.1,1, 3)
     for i in range(len(treatment_list)):
         params_intervention = {
             'infection_p_stage1': 0.05,
@@ -153,9 +158,9 @@ if __name__ == "__main__":
             'degeneration_p_stage5': 0.25,
             'p_spontaneous_degeneration': 0,
             'lateral_base_multiplier': 1,
-            'lateral_ratio_multiplication': 1.3,
+            'lateral_ratio_multiplication': 0.3,
             'ventral_base_multiplier': 1,
-            'ventral_ratio_multiplication': 1.7,
+            'ventral_ratio_multiplication': 0.7,
             'dead_neighbour_multiplier': 0,
             'treatment_alpha_syn': treatment_list[i],
             'year_per_step': mean_year_per_step_no_int
