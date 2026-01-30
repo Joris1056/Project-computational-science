@@ -134,7 +134,12 @@ def plot_neuron_degen_over_time(common_time, mean_neurons_alive, CI, index_70, t
     
 
 if __name__ == "__main__":
+
+    # number of runs per treatment strength
     runs = 10
+
+    # number of treatment strengths to simulate --> 10 mean 0.1, 0.2, ... etc.
+    treatment_points = 10
 
     params_no_intervention = {
         'infection_p_stage1': 0.05,
@@ -156,12 +161,13 @@ if __name__ == "__main__":
     }
     # simulate without intervention and calculate mean year/step for the intervention simulation
     common_time_no_int, mean_neurons_alive_no_int, CI_no_int, index_70_no_int, mean_year_per_step_no_int = sim_parkinsons_no_intervention(runs, params_no_intervention)
-    # (optional) if commented (#) only the final plot will be shown
+    # (optional) if commented (#) only the final plot will be shown 
+    # if you want to continue click the plot away
     plot_neuron_degen_over_time(common_time_no_int, mean_neurons_alive_no_int, CI_no_int, index_70_no_int, 'No Intervention', runs)
 
     difference_years_70_30_list = []
     CI_difference_years = []
-    treatment_list = np.linspace(0.1,1, 10)
+    treatment_list = np.linspace(0.1,1,treatment_points)
     for i in range(len(treatment_list)):
         params_intervention = {
             'infection_p_stage1': 0.05,
