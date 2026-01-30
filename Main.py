@@ -290,8 +290,11 @@ class ParkinsonSim(Model):
             if value == 6:
                 dead_neighbours += 1
         
+        # dead neighbour multiplier calculation --> more dead neighbours increases degeneration prob
         dead_neighbours_multiplier = 1 + self.dead_neighbour_multiplier * dead_neighbours
 
+        # raw prob degeneration = degeneration prob per stage * local sensitivity * dead neighbour multiplier
+        # scaled prob degeneration = 1 - exp(- raw prob degeneration)
         if current_value != 0 and current_value != 6:
             if current_value == 1:
                     p_degeneration = self.degeneration_p_stage1*local_sensitivity * dead_neighbours_multiplier
@@ -333,6 +336,7 @@ class ParkinsonSim(Model):
         perc_dead_neurons = round((number_dead_neurons/number_neurons) * 100,2)
         perc_alive_neurons = 100 - perc_dead_neurons
 
+        # track time steps when 70%, 30%, and ~1% of neurons are alive
         if perc_alive_neurons <= 70.0 and self.t_70 == None:
             self.t_70 = self.t
         if perc_alive_neurons <= 30.0 and self.t_30 == None:
@@ -340,6 +344,7 @@ class ParkinsonSim(Model):
         if perc_dead_neurons >= 99.0 and self.t_0 == None:
             self.t_0 = self.t
         
+        # based on t_70 and t_30 calculate year_per_step (literature says this takes ~10 years)
         if self.t_70 != None and self.t_30 != None and self.year_per_step == None:
             delta_step = self.t_30 - self.t_70
             self.year_per_step = 10/delta_step
@@ -364,6 +369,7 @@ class ParkinsonSim(Model):
         
         self.config = new_config
 
+        # stop simulation when 99% of neurons are dead
         if perc_dead_neurons >= 99.0:
             return True
         
