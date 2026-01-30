@@ -162,6 +162,7 @@ class ParkinsonSim_intervention(Model):
         import matplotlib
         import matplotlib.pyplot as plt
 
+        # calculate percentage of alive and dead neurons
         mask = (self.config != -1)
         number_neurons = np.sum(mask)
 
@@ -171,10 +172,10 @@ class ParkinsonSim_intervention(Model):
         neuron_per_cel = total_neuron/number_neurons
         perc_dead_neurons = round((number_dead_neurons/number_neurons) * 100,2)
         neuron_representation = f'One cell = {int(neuron_per_cel)} dopaminergic neurons'
-        percentage_dead_neurons = f'{perc_dead_neurons}% neurons dead'        
+        percentage_dead_neurons = f'{perc_dead_neurons}% neurons dead'   
+
+        # generate interface of the simulation
         plt.cla()
-        # 3. Use plt.imshow() to render self.config
-        # Note: Set vmin and vmax to keep the color scale consistent
         cmap = plt.get_cmap('YlOrRd')
         cmap.set_under('lightgrey')
         plt.imshow(self.config, origin = 'lower', vmin=0, vmax=self.k - 1,
@@ -190,7 +191,8 @@ class ParkinsonSim_intervention(Model):
                 fontsize=9, verticalalignment='top',
                 bbox=dict(boxstyle='round', facecolor='white', alpha=0.7))
 
-
+        
+        # code that changes the live plot of neurons alive over time based on simulation progression
         if self.t_70 is not None:
             self.line_neuron_alive.set_data(np.array(self.time_years) - self.t_70_years, 100 - np.array(self.neuron_death))
         else:
@@ -256,7 +258,9 @@ class ParkinsonSim_intervention(Model):
             for value in neighbour_values:
                 if value >= 1:
                     sick_neighbours.append(value)
-            
+
+            # raw prob of no infection = infection prob per stage * local sensitivity
+            # schaled prob of no infection = exp(- raw prob of infection)
             p_no_infection_one_cell = []
             for value in sick_neighbours:
                 if value == 1:
@@ -281,10 +285,11 @@ class ParkinsonSim_intervention(Model):
                     p_no_infection_one_cell.append(schaled_p)
             
             p_no_infection = 1 - (self.p_spontaneous_degeneration * local_sensitivity)
+            # total prob of no infection is the product of all no infection probabilities from each sick neighbour
             for i in range(0,len(p_no_infection_one_cell)):
                 p_no_infection *= p_no_infection_one_cell[i]
 
-            # chance of healthy cell getting infected
+            # chance of healthy cell getting infected = 1 - chance of no infection
             p_infection = 1 - p_no_infection
 
             if np.random.random() < p_infection:
@@ -301,9 +306,12 @@ class ParkinsonSim_intervention(Model):
         for value in neighbour_values:
             if value == 6:
                 dead_neighbours += 1
-        
+
+        # dead neighbour multiplier calculation --> more dead neighbours increases degeneration prob
         dead_neighbours_multiplier = 1 + self.dead_neighbour_multiplier * dead_neighbours
 
+        # raw prob degeneration = degeneration prob per stage * local sensitivity * dead neighbour multiplier
+        # scaled prob degeneration = 1 - exp(- raw prob degeneration)
         if current_value != 0 and current_value != 6:
             if current_value == 1:
                     p_degeneration = self.degeneration_p_stage1*local_sensitivity * dead_neighbours_multiplier
@@ -375,6 +383,7 @@ class ParkinsonSim_intervention(Model):
         
         self.config = new_config
 
+        # stop simulation when 99% of neurons are dead
         if perc_dead_neurons >= 99.0:
             return True
         
