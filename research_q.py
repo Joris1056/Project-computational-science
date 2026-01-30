@@ -7,6 +7,10 @@ from intervention_main import ParkinsonSim_intervention
 
 
 def sim_parkinsons_no_intervention(number_runs, params):
+    """
+    Simulates Parkinson's disease progression without intervention.
+
+    """
     neurons_alive_total = []
     years_total = []
     year_step_runs = []
@@ -34,7 +38,8 @@ def sim_parkinsons_no_intervention(number_runs, params):
     t_min = 0
     t_max = min(max(y) for y in years_total)
     n_points = 200
-
+    
+    # use interpolation to get common time points
     common_time = np.linspace(t_min, t_max, n_points)
 
     neurons_interp = []
@@ -50,6 +55,7 @@ def sim_parkinsons_no_intervention(number_runs, params):
 
     neurons_interp = np.array(neurons_interp)
 
+    # calculate mean and 95% CI of neurons alive at each time point for all runs
     mean_neurons_alive = np.nanmean(neurons_interp, axis=0)
     std_neurons_alive = np.nanstd(neurons_interp, axis=0)
     CI = [mean_neurons_alive - (1.96 * (std_neurons_alive/np.sqrt(number_runs))), mean_neurons_alive + (1.96 * (std_neurons_alive/np.sqrt(number_runs)))]
@@ -60,6 +66,10 @@ def sim_parkinsons_no_intervention(number_runs, params):
 
 
 def sim_parkinsons_intervention(number_runs, params):
+    """
+    Simulates Parkinson's disease progression with intervention.
+
+    """
     neurons_alive_total = []
     years_total = []
 
@@ -80,6 +90,7 @@ def sim_parkinsons_intervention(number_runs, params):
         neurons_alive_total.append(neuron_alive)
         years_total.append(sim.time_years)
 
+    # calculate the difference in years between 70% and 30% neurons alive for each run
     diff_runs = []
     for years, neurons in zip(years_total, neurons_alive_total):
         neurons_arr = np.array(neurons)
@@ -94,6 +105,7 @@ def sim_parkinsons_intervention(number_runs, params):
 
         diff_runs.append(t_30 - t_70)
 
+    # calculate mean and 95% CI of the differences
     diff_runs = np.array(diff_runs)
     mean_diff_runs = np.mean(diff_runs)
     std_diff_runs = np.std(diff_runs)
@@ -107,6 +119,10 @@ def sim_parkinsons_intervention(number_runs, params):
 
 
 def plot_neuron_degen_over_time(common_time, mean_neurons_alive, CI, index_70, title, runs):
+    """
+    plots neuron degeneration over time with mean and 95% CI.
+
+    """
     plt.plot(common_time-common_time[index_70], mean_neurons_alive, label = 'mean')
     plt.fill_between(np.array(common_time)-common_time[index_70], CI[0], CI[1], alpha = 0.3, color = 'red', label = '95% CI')
     plt.axvline(x = common_time[index_70]-common_time[index_70], color='red', linestyle='--', label='70% neurons alive')
@@ -139,6 +155,7 @@ if __name__ == "__main__":
         'dead_neighbour_multiplier': 0,
     }
     common_time_no_int, mean_neurons_alive_no_int, CI_no_int, index_70_no_int, mean_year_per_step_no_int = sim_parkinsons_no_intervention(runs, params_no_intervention)
+    # (optional) if commented (#) only the final plot will be shown
     plot_neuron_degen_over_time(common_time_no_int, mean_neurons_alive_no_int, CI_no_int, index_70_no_int, 'No Intervention', runs)
 
     difference_years_70_30_list = []
