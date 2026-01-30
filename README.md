@@ -10,7 +10,7 @@ To run a non-intervention parkinsons disease simulation in the substantia nigra,
 
 To run a intervention parkinsons disease simulation in the substantia nigra, you'll need to go to intervention-main.py and run the code. This again will give you an interface where you can change the parameters, here we also added the intervention strenght. The lower the treatment value the stronger the intervention (0.3 would be 70% intervention strength, 0.1 would be 90% intervention strenght etc.). When you click on RUN the simulation will start and Parkinson's Disease will slowly take over the substantia nigra.
 
-Finally to run the effect of intervention on years between 70% to 30% neurons alive plot. We created the research_q file. 
+Finally to run the effect of intervention on years between 70% to 30% neurons alive plot. We created the research_q file. In the bottom of the file you can # the plot function for the no intervention to only see the intervention with different treatment strength plots. If you want to see the non-intervention plot and want to continue to the intervention plot you have to simply click the non-intervention plot away afterwards it will automatically continue.
 
 ## Random search for the parameters (not used)
 
