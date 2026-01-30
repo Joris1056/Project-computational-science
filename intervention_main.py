@@ -223,6 +223,7 @@ class ParkinsonSim_intervention(Model):
     def get_neighbours(self, y, x):
         """
         Helper function to retrieve the states of the 8 neighbors (Moore neighborhood).
+        
         """
         set_neighbours = set()
         for dx in range(-1, 2):
@@ -234,6 +235,11 @@ class ParkinsonSim_intervention(Model):
         return list(set_neighbours)
     
     def calculate_new_cell_value(self, current_value, neighbour_values, y, x):
+        """
+        Calculates the new state of a cell based on its current state and the states of its neighbors.
+        Implements the infection and degeneration rules.
+        
+        """
         if current_value == -1:
             return -1
         
