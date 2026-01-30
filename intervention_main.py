@@ -11,7 +11,8 @@ from pyics import Model
 # Changes: added parameter treatment_alpha_syn
 #          added parameter year_per_step
 
-#          at the degeneration part we 
+#          calculation degeneration per step is now times the 
+#          treatment strength, simulation treatment in the disease.
 class ParkinsonSim_intervention(Model):
     def __init__(self, visualize = True):
         Model.__init__(self)
