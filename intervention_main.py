@@ -7,12 +7,15 @@
 import numpy as np
 from pyics import Model
 
-# The class is overall the same as the class in Main.py
+# The class is overall the same as the class in Main.py but we made some changes.
+
 # Changes: added parameter treatment_alpha_syn
 #          added parameter year_per_step
 
 #          calculation degeneration per step is now times the 
 #          treatment strength, simulation treatment in the disease.
+
+#          Overall deleted some parts that were not necessary anymore.
 class ParkinsonSim_intervention(Model):
     def __init__(self, visualize = True):
         Model.__init__(self)
