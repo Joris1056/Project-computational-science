@@ -154,6 +154,7 @@ if __name__ == "__main__":
         'ventral_ratio_multiplication': 0.7,
         'dead_neighbour_multiplier': 0,
     }
+    # simulate without intervention and calculate mean year/step for the intervention simulation
     common_time_no_int, mean_neurons_alive_no_int, CI_no_int, index_70_no_int, mean_year_per_step_no_int = sim_parkinsons_no_intervention(runs, params_no_intervention)
     # (optional) if commented (#) only the final plot will be shown
     plot_neuron_degen_over_time(common_time_no_int, mean_neurons_alive_no_int, CI_no_int, index_70_no_int, 'No Intervention', runs)
@@ -180,6 +181,8 @@ if __name__ == "__main__":
             'ventral_ratio_multiplication': 0.7,
             'dead_neighbour_multiplier': 0,
             'treatment_alpha_syn': treatment_list[i],
+
+            # the mean year per step from no intervention simulation is used in the intervention simulation
             'year_per_step': mean_year_per_step_no_int
             }
         
