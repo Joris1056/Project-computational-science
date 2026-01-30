@@ -8,7 +8,7 @@ First of all we have the package Pyics that we use. This was introduced to us in
 ## How to run the code
 To run a non-intervention parkinsons disease simulation in the substantia nigra, you'll need to go the Main.py. Here after running the code you'll get a interface where you have the option to change the probabilities of infection or even degeneration of the neurons. When you click on RUN the simulation will start and Parkinson's Disease will slowly take over the substantia nigra.
 
-To run a intervention parkinsons disease simulation in the substantia nigra, you'll need to go to intervention-main.py and run the code. This again will give you an interface where you can change the parameters, here we also added the intervention strenght. The lower the treatment value the stronger the intervention. When you click on RUN the simulation will start and Parkinson's Disease will slowly take over the substantia nigra.
+To run a intervention parkinsons disease simulation in the substantia nigra, you'll need to go to intervention-main.py and run the code. This again will give you an interface where you can change the parameters, here we also added the intervention strenght. The lower the treatment value the stronger the intervention (0.3 would be 70% intervention strength, 0.1 would be 90% intervention strenght etc.). When you click on RUN the simulation will start and Parkinson's Disease will slowly take over the substantia nigra.
 
 Finally to run the effect of intervention on years between 70% to 30% neurons alive plot. We created the research_q file. 
 
