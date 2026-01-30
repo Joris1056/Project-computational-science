@@ -193,15 +193,16 @@ if __name__ == "__main__":
     CI_lower = [ci[0] for ci in CI_difference_years]
     CI_upper = [ci[1] for ci in CI_difference_years]
 
-
+    
+    # in order to obtain a plot with increasing treatment strength and corresponding
+    # difference in years between 70% and 30% neurons alive the data is sorted in descending order
     reduction_percentages = (1 - np.array(treatment_list)) * 100
-
-
     sort_indices = np.argsort(reduction_percentages)
     x_coords = reduction_percentages[sort_indices]
     y_coords = np.array(difference_years_70_30_list)[sort_indices]
     ci_low = np.array(CI_lower)[sort_indices]
     ci_high = np.array(CI_upper)[sort_indices]
+
     plt.figure()
     plt.plot(x_coords, y_coords)
     plt.fill_between(x_coords, ci_low, ci_high, alpha = 0.3,color = 'red', label = '95% CI')
