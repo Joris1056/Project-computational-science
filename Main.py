@@ -62,6 +62,7 @@ class ParkinsonSim(Model):
             self.ax_neuron_alive.set_title('Neurons alive Over Time')
             self.ax_neuron_alive.legend()
 
+        # initialise values to be tracked in simulation
         self.t = 0
         self.time = []
         self.neuron_death = []
@@ -71,7 +72,7 @@ class ParkinsonSim(Model):
         self.t_30 = None
         self.t_0 = None
 
-
+        # create the substantia nigra shape in the CA grid
         self.config = np.full((self.height, self.width), -1.0)
         
         center_x = self.width * 0.35
@@ -86,6 +87,7 @@ class ParkinsonSim(Model):
                 if y > curve and y < curve + width:
                     self.config[y, x] = 0
         
+        # find the bounds of the SN grid to be used in the sensitivity matrix
         self.sn_bounds = {}
 
         for x in range(self.width):
@@ -95,6 +97,7 @@ class ParkinsonSim(Model):
                 y_max = ys.max()
                 self.sn_bounds[x] = (y_min,y_max)
         
+        # create sensitivity matrix
         self.sensitivity_matrix = np.full((self.height, self.width), 0)
         
         
@@ -104,6 +107,11 @@ class ParkinsonSim(Model):
                     ratio_x = x/self.width
                     y_min,y_max = self.sn_bounds[x]
                     relative_y = (y-y_min)/(y_max-y_min)
+
+                    # the formula for the x and y multipliers is multiplier = base + (ratio * multiplication)
+                    # the x and y multipliers are then multiplied together and squared to get the sensitivity value
+                    # the multiplication and squaring makes the sensitivity more extreme towards the ventral-lateral area 
+                    # it also keeps the multipliers more reasonable given the probabilities
                     x_multiplier = self.lateral_base_multiplier + (ratio_x * self.lateral_ratio_multiplication)
                     y_multiplier = self.ventral_base_multiplier + ((1 - relative_y)* self.ventral_ratio_multiplication)
                     self.sensitivity_matrix[y,x] = (x_multiplier * y_multiplier)**2
