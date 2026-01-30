@@ -1,11 +1,14 @@
-#here we add the interventions against the disease
+# Intervention main
 
+# Here we run the same simulation as Main.py but now we have also added the parameter 
+# treatment_alpha_syn, the lower this value (between 0.0 and 1.0) the stronger the treatment.
 
-# Main
-
+# fort the imports
 import numpy as np
 from pyics import Model
 
+# The class is overall the same as the class in Main.py
+# Changes: 
 class ParkinsonSim_intervention(Model):
     def __init__(self, visualize = True):
         Model.__init__(self)
@@ -51,10 +54,17 @@ class ParkinsonSim_intervention(Model):
         self.make_param('ventral_ratio_multiplication', 0.7)
         self.make_param('dead_neighbour_multiplier', 0)
 
-        #now we add the parameters for the treatment:
-        self.make_param('treatment_alpha_syn', 1)
+        # added parameters for treatment:
+        
+        # first of all lets add a parameter that give the treatment strength value.
+        # this will be a value that is between 0.0 and 1.0. The lower the value the
+        # stronger the treatment will be (0.30 is 70% decreased probability of degeneration of the group neurons).
+        self.make_param('treatment_alpha_syn', 0.3)
 
-        #now lets add the year per step parameter, that we calculated earlier
+        # In the Main.py code we calculate ta year_per_step. this lines up the 30% loss
+        # and the 70% loss of neurons in the substantia nigra to our found literature.
+        # In this intervention codewe compare it to a non intervention simulation. 
+        # So we use the year_per_step and add it here.
         self.make_param('year_per_step',0.07194244604316546)
         
 
@@ -79,13 +89,6 @@ class ParkinsonSim_intervention(Model):
         self.t_30_years = None  
         self.t_0_years = None   
         
-        # old way:
-        # 2. Initialize your grid here (e.g., all zeros for healthy)
-        # You could also 'infect' one cell in the center to start the process
-        #self.config = np.zeros((self.height,self.width))
-        #middle_x = self.width//2
-        #middle_y = self.height//2
-        #self.config[middle_y,middle_x] = 1
 
 
         self.config = np.full((self.height, self.width), -1.0)
