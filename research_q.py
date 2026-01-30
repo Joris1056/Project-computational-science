@@ -138,7 +138,8 @@ if __name__ == "__main__":
     # number of runs per treatment strength
     runs = 10
 
-    # number of treatment strengths to simulate --> 10 mean 0.1, 0.2, ... etc.
+    # number of treatment strengths to simulate --> 
+    # 1/treatment_points = step size --> 10 --> 0.1, 0.2, ..., 1.0
     treatment_points = 10
 
     params_no_intervention = {
