@@ -1,5 +1,6 @@
 Project-computational-science
 # Welcome to our project!
+This GitHub reposetory contains simulations of Parkinson's Disease within the substantia nigra. This reposetory was developed for Project Computational Science. 
 
 # Packages
 First of all we have the package Pyics that we use. This was introduced to us in Introduction Computational Science. And we used this to create an interface to run Parkinsons disease in the substantia nigra.
