@@ -5,14 +5,14 @@ This GitHub reposetory contains simulations of Parkinson's Disease within the su
 ## Packages
 First of all we have the package Pyics that we use. This was introduced to us in Introduction Computational Science in the cellular automata. We used this to create an interface to run Parkinsons disease in the substantia nigra.
 
-# How to run the code
+## How to run the code
 To run a non-intervention parkinsons disease simulation in the substantia nigra, you'll need to go the Main.py. Here after running the code you'll get a interface where you have the option to change the probabilities of infection or even degeneration of the neurons. When you click on RUN the simulation will start and Parkinson's Disease will slowly take over the substantia nigra.
 
 To run a intervention parkinsons disease simulation in the substantia nigra, you'll need to go to intervention-main.py and run the code. This again will give you an interface where you can change the parameters, here we also added the intervention strenght. The lower the treatment value the stronger the intervention. When you click on RUN the simulation will start and Parkinson's Disease will slowly take over the substantia nigra.
 
 Finally to run the effect of intervention on years between 70% to 30% neurons alive plot. We created the research_q file. 
 
-# Random search for the parameters (not used)
+## Random search for the parameters (not used)
 
 We have tried to implement random search to validate our parameters but this didn't work out because of the probabilities (90% to 95% which is weird) that it gave.
 You will be able to run it in the random_search file and see our results in the random_search_results.csv.
