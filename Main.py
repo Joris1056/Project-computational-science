@@ -54,6 +54,8 @@ class ParkinsonSim(Model):
 
     def reset(self):
         """Initializes or resets the simulation state."""
+
+        # created plot of neurons alive over time
         if self.visualize:
             import matplotlib.pyplot as plt
             self.fig_neuron_alive, self.ax_neuron_alive = plt.subplots()
@@ -117,6 +119,7 @@ class ParkinsonSim(Model):
                     self.sensitivity_matrix[y,x] = (x_multiplier * y_multiplier)**2
                     
 
+        # infect one cell and Moore neighbourhood on the lateral-verntral side to start the infection
         found = False
         for x in range(self.width - 1, 0, -1):
             for y in range(self.height):
@@ -140,6 +143,7 @@ class ParkinsonSim(Model):
         import matplotlib
         import matplotlib.pyplot as plt
 
+        # calculate percentage of alive and dead neurons
         mask = (self.config != -1)
         number_neurons = np.sum(mask)
 
@@ -149,10 +153,11 @@ class ParkinsonSim(Model):
         neuron_per_cel = total_neuron/number_neurons
         perc_dead_neurons = round((number_dead_neurons/number_neurons) * 100,2)
         neuron_representation = f'One cell = {int(neuron_per_cel)} dopaminergic neurons'
-        percentage_dead_neurons = f'{perc_dead_neurons}% neurons dead'        
+        percentage_dead_neurons = f'{perc_dead_neurons}% neurons dead'  
+
+
+        # generate interface of the simulation
         plt.cla()
-        # 3. Use plt.imshow() to render self.config
-        # Note: Set vmin and vmax to keep the color scale consistent
         cmap = plt.get_cmap('YlOrRd')
         cmap.set_under('lightgrey')
         plt.imshow(self.config, origin = 'lower', vmin=0, vmax=self.k - 1,
@@ -169,6 +174,7 @@ class ParkinsonSim(Model):
                 bbox=dict(boxstyle='round', facecolor='white', alpha=0.7))
 
 
+        # code that changes the live plot of neurons alive over time based on simulation progression
         if self.year_per_step is not None:
             self.line_neuron_alive.set_data(np.array(self.time_years) - self.t_70 * self.year_per_step, 100 - np.array(self.neuron_death))
         else:
@@ -236,7 +242,8 @@ class ParkinsonSim(Model):
             for value in neighbour_values:
                 if value >= 1:
                     sick_neighbours.append(value)
-            
+            # raw prob of no infection = infection prob per stage * local sensitivity
+            # schaled prob of no infection = exp(- raw prob of infection)
             p_no_infection_one_cell = []
             for value in sick_neighbours:
                 if value == 1:
@@ -261,10 +268,11 @@ class ParkinsonSim(Model):
                     p_no_infection_one_cell.append(schaled_p)
             
             p_no_infection = 1 - (self.p_spontaneous_degeneration * local_sensitivity)
+            # total prob of no infection is the product of all no infection probabilities from each sick neighbour
             for i in range(0,len(p_no_infection_one_cell)):
                 p_no_infection *= p_no_infection_one_cell[i]
 
-            # chance of healthy cell getting infected
+            # chance of healthy cell getting infected = 1 - chance of no infection
             p_infection = 1 - p_no_infection
 
             if np.random.random() < p_infection:
