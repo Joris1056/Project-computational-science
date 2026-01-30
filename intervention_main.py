@@ -11,7 +11,8 @@ from pyics import Model
 # Changes: added parameter treatment_alpha_syn
 #          added parameter year_per_step
 
-#
+#          calculation degeneration per step is now times the 
+#          treatment strength, simulation treatment in the disease.
 class ParkinsonSim_intervention(Model):
     def __init__(self, visualize = True):
         Model.__init__(self)
@@ -316,8 +317,13 @@ class ParkinsonSim_intervention(Model):
         # dead neighbour multiplier calculation --> more dead neighbours increases degeneration prob
         dead_neighbours_multiplier = 1 + self.dead_neighbour_multiplier * dead_neighbours
 
+
+        # The biggest difference between Main.py (so no intervention) and this code (so with intervention)
+        # is the part where we calculate the degeneration probability. In our simulation an intervention is 
+        # equal to p_degeneration_scaled * the treatment strength.
+        
         # raw prob degeneration = degeneration prob per stage * local sensitivity * dead neighbour multiplier
-        # scaled prob degeneration = 1 - exp(- raw prob degeneration)
+        # scaled prob degeneration = 1 - exp(- raw prob degeneration) * treatment
         if current_value != 0 and current_value != 6:
             if current_value == 1:
                     p_degeneration = self.degeneration_p_stage1*local_sensitivity * dead_neighbours_multiplier
